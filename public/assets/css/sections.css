@@ -1,0 +1,360 @@
+/* =====================================================================
+   sections.css — Intro, Hero, Marquee, Services, Believe, Chiffres, CTA
+   Style : typographie géante inspirée Huge, sur fond blanc Digital Smile
+   ===================================================================== */
+
+/* ============ ① INTRO FLASH (overlay plein écran) ============ */
+.intro {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;              /* clic = passer l'intro */
+}
+.intro__counter {
+    position: absolute;
+    bottom: 6vh; right: var(--pad);
+    font-family: var(--font-display);
+    font-size: clamp(40px, 8vw, 110px);
+    font-weight: 800;
+    color: var(--gray-light);
+}
+.intro__word {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 9vw, 130px);
+    font-weight: 800;
+    letter-spacing: -3px;
+    color: var(--black);
+    opacity: 0;                   /* animé en JS */
+}
+.intro__word .accent { color: var(--green); }
+
+/* ============ ② HERO — typo géante sur vidéo ============ */
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px var(--pad) 60px;
+    overflow: hidden;
+}
+/* Vidéo plein cadre derrière tout */
+.hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.hero__media video,
+.hero__media img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+/* Voile dégradé : la vidéo reste belle, le texte reste lisible */
+.hero__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,.92) 0%,
+        rgba(255,255,255,.72) 40%,
+        rgba(255,255,255,.45) 70%,
+        rgba(255,255,255,.85) 100%
+    );
+}
+.hero__content { position: relative; z-index: 2; max-width: var(--maxw); }
+.hero__eyebrow {
+    display: inline-block;
+    font-weight: 600;
+    font-size: clamp(11px, 1.3vw, 14px);
+    letter-spacing: 4px;
+    color: var(--green-dark);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+/* Titre GÉANT — il EST le design */
+.hero__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(52px, 11vw, 160px);
+    line-height: .98;
+    letter-spacing: -0.03em;
+}
+.hero__title .accent { color: var(--green); }
+.hero__title .line { display: block; overflow: hidden; }   /* pour reveal ligne/ligne */
+.hero__sub {
+    margin-top: 26px;
+    font-size: clamp(16px, 1.6vw, 19px);
+    color: #3d3d4e;
+    max-width: 520px;
+}
+.hero__btns { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+/* Mot fantôme en parallax */
+.hero__ghost {
+    position: absolute;
+    right: -4vw; bottom: -2vw;
+    z-index: 1;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24vw;
+    color: rgba(74,63,158,.05);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ============ ③ MARQUEE défilant infini ============ */
+.marquee {
+    background: var(--black);
+    color: var(--white);
+    overflow: hidden;
+    padding: 18px 0;
+}
+.marquee__track {
+    display: inline-flex;
+    gap: 46px;
+    white-space: nowrap;
+    animation: marquee 22s linear infinite;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(16px, 2.2vw, 26px);
+    letter-spacing: 1px;
+}
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__track .dot { color: var(--green); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ============ ④ SERVICES — liste numérotée + image au survol ⭐ ===== */
+.services { padding: clamp(70px, 10vw, 130px) 0; position: relative; }
+.services__list { border-top: 1px solid rgba(20,20,43,.12); }
+.service {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    padding: clamp(22px, 3.5vw, 40px) var(--pad);
+    border-bottom: 1px solid rgba(20,20,43,.12);
+    cursor: pointer;
+    transition: background .3s ease;
+    position: relative;
+}
+.service:hover { background: var(--gray-light); }
+.service__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(26px, 5vw, 64px);
+    letter-spacing: -0.02em;
+    transition: transform .35s ease, color .35s ease;
+}
+.service:hover .service__name {
+    transform: translateX(18px);
+    color: var(--purple);
+}
+.service__num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(13px, 1.4vw, 17px);
+    color: var(--gray);
+}
+/* Image flottante qui suit la souris (pilotée en JS) */
+.services__reveal {
+    position: fixed;
+    top: 0; left: 0;
+    width: min(340px, 30vw);
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 500;
+    opacity: 0;
+    transform: scale(.85);
+    box-shadow: 0 30px 80px rgba(20,20,43,.25);
+}
+.services__reveal img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    mix-blend-mode: normal;
+}
+
+/* ============ ⑤ WE BELIEVE — storytelling au scroll ============ */
+.believe { padding: clamp(80px, 12vw, 150px) var(--pad); }
+.believe__line {
+    max-width: 1000px;
+    margin: 0 auto clamp(30px, 5vw, 60px);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(26px, 4.5vw, 56px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+.believe__line .accent { color: var(--green); }
+.believe__line .muted  { color: rgba(20,20,43,.25); }
+
+/* ============ ⑥ CHIFFRES géants ============ */
+.stats {
+    background: var(--gray-light);
+    padding: clamp(70px, 10vw, 120px) var(--pad);
+}
+.stats__grid {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    text-align: center;
+}
+.stat__value {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(54px, 9vw, 120px);
+    line-height: 1;
+    color: var(--purple);
+}
+.stat__value .accent { color: var(--green); }
+.stat__label { margin-top: 10px; color: var(--gray); font-size: 15px; }
+
+/* ============ ⑦ CTA final géant ============ */
+.cta {
+    padding: clamp(90px, 14vw, 180px) var(--pad);
+    text-align: center;
+}
+.cta__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(60px, 14vw, 200px);
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+.cta__title .accent { color: var(--green); }
+.cta p { margin: 22px 0 34px; color: var(--gray); font-size: 17px; }
+
+/* ============ ②b TRUST BAR — noms clients en typo sobre ========= */
+.trust {
+    padding: clamp(34px, 5vw, 60px) var(--pad);
+    border-top: 1px solid rgba(20,20,43,.08);
+}
+.trust__label {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 26px;
+}
+.trust__list {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(24px, 5vw, 64px);
+}
+.trust__list li {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(14px, 1.8vw, 20px);
+    letter-spacing: 1px;
+    color: rgba(20,20,43,.30);          /* discret par défaut */
+    transition: color .3s ease, transform .3s ease;
+}
+.trust__list li:hover { color: var(--purple); transform: translateY(-3px); }
+
+/* ============ ④b RÉALISATIONS — grille de projets réels ========= */
+.works { padding: clamp(70px, 10vw, 130px) var(--pad); }
+.works__grid {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(24px, 3vw, 44px);
+}
+.work { cursor: pointer; }
+.work__media {
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--gray-light);
+    margin-bottom: 16px;
+}
+.work__media img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .7s cubic-bezier(.2,.8,.2,1);
+}
+.work:hover .work__media img { transform: scale(1.06); }
+.work__cat {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    margin-bottom: 6px;
+}
+.work__title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(16px, 1.7vw, 20px);
+    line-height: 1.3;
+    transition: color .3s;
+}
+.work:hover .work__title { color: var(--purple); }
+
+/* ============ ④c PROCESSUS — 4 étapes ============ */
+.process {
+    background: var(--purple-dark);
+    color: var(--white);
+    padding: clamp(70px, 10vw, 130px) var(--pad);
+}
+.process .sec-title { color: var(--white); }
+.process__grid {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(24px, 3vw, 44px);
+}
+.step__num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(40px, 5vw, 64px);
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 14px;
+}
+.step__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(17px, 1.8vw, 21px);
+    margin-bottom: 10px;
+}
+.step__desc { color: rgba(255,255,255,.65); font-size: 15px; }
+
+/* ============ ⑥b TÉMOIGNAGE ============ */
+.quote {
+    padding: clamp(80px, 11vw, 150px) var(--pad);
+    text-align: center;
+}
+.quote__text {
+    max-width: 900px;
+    margin: 0 auto 24px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(22px, 3.4vw, 40px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+.quote__text .accent { color: var(--green); }
+.quote__author { color: var(--gray); font-size: 15px; }
+.quote__author em { opacity: .6; }
+
+/* ============ Responsive ============ */
+@media (max-width: 860px) {
+    .works__grid { grid-template-columns: 1fr; }
+    .process__grid { grid-template-columns: 1fr 1fr; gap: 34px; }
+    .services__reveal { display: none; }       /* pas de survol sur mobile */
+    .service { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .stats__grid { grid-template-columns: 1fr; }
+    .hero__ghost { display: none; }
+}

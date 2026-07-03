@@ -1,0 +1,29 @@
+/* =====================================================================
+   motion.css — États initiaux des animations + accessibilité
+   Principe : le CSS pose l'état de départ, GSAP anime vers l'état final.
+   ===================================================================== */
+
+/* Les éléments "à révéler" démarrent invisibles (GSAP les animera).
+   La classe .no-js (retirée en JS) garantit que sans JavaScript,
+   tout reste visible : le site ne casse jamais. */
+html.js .will-reveal { opacity: 0; }
+
+/* Lignes du titre héros : cachées en dessous, glissent vers le haut */
+html.js .hero__title .line span {
+    display: inline-block;
+    transform: translateY(110%);
+}
+
+/* Performance : on prévient le navigateur des propriétés animées */
+.hero__title .line span,
+.service__name,
+.services__reveal { will-change: transform, opacity; }
+
+/* --- Accessibilité : utilisateurs préférant moins de mouvement --- */
+@media (prefers-reduced-motion: reduce) {
+    html.js .will-reveal { opacity: 1 !important; }
+    html.js .hero__title .line span { transform: none !important; }
+    .marquee__track, .btn--marquee:hover .btn__track { animation: none !important; }
+    * { transition-duration: .01ms !important; }
+    .intro { display: none !important; }        /* pas d'intro animée */
+}

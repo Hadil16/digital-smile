@@ -1,0 +1,5 @@
+# Empêche l'accès direct à la racine du projet.
+# Tout le trafic doit passer par le dossier public/.
+RewriteEngine On
+RewriteRule ^$ public/ [L]
+RewriteRule (.*) public/$1 [L]
