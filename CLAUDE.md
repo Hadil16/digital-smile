@@ -1,3 +1,5 @@
+> 📚 Règles permanentes pour les assistants IA : [AI_RULES.md](AI_RULES.md) · Base de connaissances complète : [docs/](docs/) — à consulter avant toute intervention.
+
 # CLAUDE.md — Instructions du projet Digital Smile
 
 > Ce fichier est lu automatiquement par Claude Code à l'ouverture du projet.

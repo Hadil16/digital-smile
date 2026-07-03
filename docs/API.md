@@ -1,0 +1,54 @@
+# API.md — Interfaces HTTP
+
+> État : **AUCUNE API IMPLÉMENTÉE** (constat du 2026-07-03).
+
+---
+
+## 1. État réel
+
+L'application est (et restera en v1) une application **rendue côté serveur** :
+PHP génère le HTML, les formulaires postent vers des routes PHP classiques.
+Il n'existe **aucun endpoint REST/JSON** dans le codebase, et aucun n'est requis
+par le périmètre v1.
+
+Seules pages HTTP existantes aujourd'hui :
+
+| URL | Méthode | Rôle | Statut |
+|---|---|---|---|
+| `/public/index.html` | GET | Page d'accueil statique | ✅ Existe |
+| `/public/health.php` | GET | Bilan de santé (dev) | ✅ Existe — à supprimer en prod |
+| `/public/install.php` | GET | Création du compte admin | ✅ Existe — à supprimer après usage |
+| toute autre URL | * | Réécrite vers `index.php?url=...` par `public/.htaccess` | ❌ **404 : `index.php` n'existe pas encore** |
+
+## 2. Routes prévues (Phase 5-6) — plan indicatif, non implémenté
+
+Ces routes serviront le workflow des commandes via le front controller
+(`public/index.php?url=...`). Elles rendront du HTML (pas du JSON), sauf mention.
+
+| Route (cible) | Méthode | Rôle métier | Accès (RBAC) |
+|---|---|---|---|
+| `/login`, `/logout` | GET+POST / POST | Authentification par session | public / connecté |
+| `/register` | GET+POST | Création de compte client | public |
+| `/client/orders` | GET | Mes commandes | client |
+| `/client/orders/new` | GET+POST | Formulaire de demande de projet (F6) → statut `pending` | client |
+| `/client/orders/{code}` | GET | Détail, progression, livrables, facture | client propriétaire |
+| `/admin/orders` | GET | File des demandes en attente | admin |
+| `/admin/orders/{code}/approve` | POST | Valider → `approved` + assignation auto (département du service) | admin |
+| `/admin/orders/{code}/reject` | POST | Refuser → `rejected` | admin |
+| `/employee/projects` | GET | Mes projets assignés | employé |
+| `/employee/projects/{id}/progress` | POST | Mettre à jour le % (0-100) | employé assigné |
+| `/employee/projects/{id}/deliver` | POST (multipart) | Déposer le livrable → `delivered` | employé assigné |
+| `/client/orders/{code}/download/{fileId}` | GET | Télécharger un livrable **via PHP avec contrôle de droits** | client propriétaire |
+| `/admin/invoices/{code}` | GET | Facture (HTML, PDF via Dompdf en Phase 8) | admin / client concerné |
+
+## 3. Règles non négociables pour toute future route (cf. `AI_RULES.md`)
+
+1. **Toute mutation = POST** (jamais GET) **+ jeton CSRF** vérifié côté serveur.
+2. Contrôle de rôle (middleware RBAC) **avant** la logique métier.
+3. Transitions de statut validées côté serveur (machine à états d'`orders.status`) — jamais confiance au client.
+4. Paramètres liés PDO ; sortie échappée `htmlspecialchars()`.
+5. Uploads : extension/MIME whitelistés, nom de stockage régénéré, taille limitée, stockage idéalement **hors webroot** (voir AUDIT).
+6. Toute action sensible journalisée dans `activity_logs`.
+
+> **TODO** : ce tableau est un plan déduit du schéma de base et de `CLAUDE.md`.
+> Le figer (noms d'URL définitifs) au démarrage de la Phase 5.
