@@ -1,0 +1,2 @@
+# Sécurité : un fichier uploadé ne doit JAMAIS pouvoir s'exécuter.
+php_flag engine off

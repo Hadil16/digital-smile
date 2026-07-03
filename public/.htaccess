@@ -1,0 +1,7 @@
+# Front Controller : toutes les requêtes qui ne pointent pas vers un
+# vrai fichier (image, css...) sont redirigées vers index.php.
+# C'est la base d'une URL propre et sécurisée.
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

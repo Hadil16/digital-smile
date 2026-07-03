@@ -1,0 +1,79 @@
+/* =====================================================================
+   base.css — Fondations : variables, reset, typo, boutons
+   Charte Digital Smile : blanc, violet #4A3F9E, vert lime #8BC63F
+   ===================================================================== */
+
+:root {
+    --purple:      #4A3F9E;
+    --purple-dark: #26215C;
+    --green:       #8BC63F;
+    --green-dark:  #6BA02C;
+    --black:       #14142b;
+    --gray:        #6b6b7b;
+    --gray-light:  #f5f5f7;
+    --white:       #ffffff;
+
+    --font-display: 'Poppins', system-ui, sans-serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+
+    --maxw: 1280px;
+    --pad:  clamp(20px, 5vw, 60px);   /* marge latérale fluide */
+}
+
+/* --- Reset minimal --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: var(--font-body);
+    color: var(--black);
+    background: var(--white);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+img, video { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+
+/* --- Titres de section, signature "Huge" : tiret long --- */
+.sec-title {
+    font-family: var(--font-display);
+    font-size: clamp(15px, 1.6vw, 20px);
+    font-weight: 600;
+    color: var(--black);
+    padding: 0 var(--pad);
+    margin-bottom: clamp(30px, 5vw, 60px);
+}
+.sec-title::after { content: " —"; color: var(--green); }
+
+/* --- Boutons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 34px;
+    border-radius: 100px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform .25s ease, box-shadow .25s ease, background .25s, color .25s;
+    overflow: hidden;
+    position: relative;
+}
+.btn--primary { background: var(--green); color: var(--purple-dark); }
+.btn--primary:hover { box-shadow: 0 12px 34px rgba(139,198,63,.45); }
+.btn--dark { background: var(--black); color: var(--white); }
+.btn--dark:hover { background: var(--purple); }
+
+/* Bouton "Explore Explore…" : texte répété défilant au survol */
+.btn--marquee .btn__track {
+    display: inline-flex;
+    gap: 26px;
+    white-space: nowrap;
+}
+.btn--marquee:hover .btn__track {
+    animation: btn-scroll 2.5s linear infinite;
+}
+@keyframes btn-scroll {
+    to { transform: translateX(-50%); }
+}

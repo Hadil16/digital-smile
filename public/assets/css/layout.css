@@ -1,0 +1,91 @@
+/* =====================================================================
+   layout.css — Navigation + Footer
+   ===================================================================== */
+
+/* --- Navigation (verre dépoli, se compacte au scroll via JS) --- */
+.nav {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px var(--pad);
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    transition: padding .35s ease, box-shadow .35s ease;
+}
+.nav.is-compact {                    /* état après scroll (ajouté en JS) */
+    padding: 10px var(--pad);
+    box-shadow: 0 6px 30px rgba(20,20,43,.08);
+}
+.nav__logo { height: 36px; transition: height .35s ease; }
+.nav.is-compact .nav__logo { height: 30px; }
+
+.nav__links { display: flex; gap: 34px; }
+.nav__links a {
+    position: relative;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 0;
+}
+/* Soulignement animé (gauche → droite) */
+.nav__links a::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 100%; height: 2px;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+}
+.nav__links a:hover::after { transform: scaleX(1); }
+
+.nav__cta {
+    background: var(--purple);
+    color: var(--white);
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background .25s, transform .25s;
+}
+.nav__cta:hover { background: var(--purple-dark); transform: translateY(-1px); }
+.nav__burger { display: none; font-size: 26px; color: var(--black); }
+
+/* --- Footer --- */
+.footer {
+    background: var(--purple-dark);
+    color: rgba(255,255,255,.65);
+    padding: 60px var(--pad) 40px;
+}
+.footer__grid {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+}
+.footer strong { color: var(--white); font-family: var(--font-display); }
+.footer a:hover { color: var(--green); }
+.footer__bottom {
+    max-width: var(--maxw);
+    margin: 40px auto 0;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 860px) {
+    .nav__links { display: none; }
+    .nav__burger { display: block; }
+    .footer__grid { grid-template-columns: 1fr; }
+}
