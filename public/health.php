@@ -33,7 +33,7 @@ try {
     $dbError = $e->getMessage();
 }
 $checks[] = ['Connexion MySQL (base "' . DB_NAME . '")', $dbOk];
-$checks[] = ['Tables présentes : ' . $tableCount . ' / 15 attendues', $tableCount >= 15];
+$checks[] = ['Tables présentes : ' . $tableCount . ' / 17 attendues', $tableCount >= 17];
 
 // 5. Dossier uploads accessible en écriture ?
 $checks[] = ['Dossier uploads inscriptible', is_writable(UPLOAD_PATH)];

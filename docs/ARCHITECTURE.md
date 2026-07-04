@@ -13,9 +13,15 @@ digital-smile/
 ├── AI_RULES.md                # Règles permanentes pour les assistants IA
 ├── README.md                  # Guide d'installation (5 étapes XAMPP)
 ├── app/
-│   └── Core/
-│       ├── Database.php       # Singleton PDO (ERRMODE_EXCEPTION, FETCH_ASSOC, no emulate)
-│       └── Model.php          # Classe mère abstraite : find / all / insert préparés
+│   ├── Controllers/
+│   │   └── HomeController.php # Sert l'accueil (readfile de index.html, cf. B3)
+│   ├── Core/
+│   │   ├── Database.php       # Singleton PDO (ERRMODE_EXCEPTION, FETCH_ASSOC, no emulate)
+│   │   ├── Model.php          # Classe mère abstraite : find / all / insert préparés
+│   │   └── Router.php         # Routeur minimal : table chemin => callable, 404 sinon
+│   └── Views/
+│       └── errors/
+│           └── 404.php        # Page 404 autonome (styles intégrés)
 ├── config/
 │   └── config.php             # Constantes DB, BASE_URL, LANGUAGES, APP_ENV
 ├── database/
@@ -25,6 +31,7 @@ digital-smile/
 │   ├── fr.php  ├── ar.php  └── en.php   # 11 clés chacun — PAS ENCORE CHARGÉS par du code
 └── public/                    # SEUL dossier destiné à être servi
     ├── .htaccess              # Front controller : tout → index.php?url=$1
+    ├── index.php              # FRONT CONTROLLER : config + routes + dispatch
     ├── index.html             # Page d'accueil v2 statique (Huge x Digital Smile)
     ├── health.php             # Bilan de santé (dev uniquement, à supprimer en prod)
     ├── install.php            # Création admin — À SUPPRIMER après usage
@@ -36,9 +43,8 @@ digital-smile/
         └── .htaccess          # php_flag engine off (PHP désactivé)
 ```
 
-**Dossiers annoncés (README) mais pas encore créés** : `app/Controllers/`,
-`app/Models/`, `app/Views/`, `app/Middleware/`. **Fichier annoncé mais absent** :
-`public/index.php`.
+**Dossiers annoncés (README) mais pas encore créés** : `app/Models/`,
+`app/Middleware/` (viendront avec la Phase 5 — auth + RBAC).
 
 ## 2. Décisions d'architecture (ADR courts)
 
@@ -55,7 +61,7 @@ digital-smile/
 
 ### ADR-3 — Front controller unique (`public/index.php`)
 - **Décision** : toutes les URL passent par un point d'entrée unique ; `public/.htaccess` réécrit déjà `(.*)` → `index.php?url=$1`.
-- **Statut** : **préparé mais non implémenté** — le fichier `index.php` n'existe pas encore. C'est la première brique de la Phase 5.
+- **Statut** : **implémenté** (2026-07-05, item A1 roadmap) — `public/index.php` charge config + classes, déclare les routes et dispatch via `app/Core/Router.php` (table `chemin => callable`, 404 sinon). Volontairement minimal : pas de paramètres dynamiques tant qu'aucune phase n'en a besoin.
 
 ### ADR-4 — RBAC en base (1 table `users` + 1 table `roles`)
 - **Décision** : un seul `users` pour admin/employé/client, le rôle décide des droits. Jamais de `if email == admin` en dur.
@@ -78,8 +84,8 @@ digital-smile/
 
 | Brique | Cible (CLAUDE.md) | État réel constaté |
 |---|---|---|
-| Front controller | `public/index.php` reçoit toutes les requêtes | ❌ Absent ; seul le `.htaccess` est prêt |
-| Controllers / Models / Views | MVC simplifié complet | ❌ Dossiers inexistants ; seule la classe mère `Model` existe |
+| Front controller | `public/index.php` reçoit toutes les requêtes | ✅ Implémenté : `index.php` + `Router` + page 404 |
+| Controllers / Models / Views | MVC simplifié complet | ⚠️ Amorcé : `HomeController`, `Views/errors/404.php` ; `Models/` et `Middleware/` restent à créer (Phase 5) |
 | Base de données | 15 tables annoncées | ✅ Schéma complet — **17 tables réelles** |
 | Connexion DB | PDO sécurisé singleton | ✅ `Database.php` |
 | Authentification + RBAC | Login + 3 espaces | ❌ Uniquement les tables |
@@ -88,7 +94,7 @@ digital-smile/
 | Workflow commandes | 6 étapes, machine à états | ❌ ENUM en base uniquement |
 | Fichiers / uploads | Dépôt sécurisé | ⚠️ Dossier + `.htaccess` prêts ; aucune logique d'upload |
 | Facturation | FAC-AAAA-NNNN, TVA 19 % | ❌ Tables seules |
-| Vidéo héros | `assets/video/cubes-logo.mp4` | ❌ Fichier absent (le poster `hero.jpg` s'affiche) |
+| Vidéo héros | `assets/video/cubes-logo.mp4` | ❌ Fichier absent — la balise `<source>` a été neutralisée (plus de 404) ; `hero.jpg` affiché en attendant, bloc `<video>` prêt en commentaire dans `index.html` |
 | Bibliothèques Composer | Chart.js, Dompdf, PhpSpreadsheet si besoin | ❌ Composer non initialisé (aucun `composer.json`) — normal à ce stade |
 
 ## 4. Flux d'une requête (cible Phase 5)
@@ -100,4 +106,6 @@ Navigateur → Apache → public/.htaccess → public/index.php (front controlle
     → View (échappement htmlspecialchars) → HTML
 ```
 
-Aujourd'hui, seul le trajet statique existe : `Navigateur → Apache → public/index.html`.
+État au 2026-07-05 : le trajet `Navigateur → .htaccess → index.php → Router
+→ HomeController → index.html` (ou → `Views/errors/404.php`) fonctionne.
+Les étapes Middleware et Model arriveront avec la Phase 5.
