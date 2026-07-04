@@ -41,13 +41,19 @@
 <!-- ============ ② HERO — typo géante sur vidéo ============ -->
 <header class="hero" id="accueil">
     <div class="hero__media">
-        <!-- Vidéo ampoule : autoplay muet en boucle.
-             poster + <img> de secours si la vidéo ne charge pas. -->
-        <video autoplay muted loop playsinline preload="metadata"
-               poster="assets/img/hero.jpg"
-               onerror="this.outerHTML='<img src=assets/img/hero.jpg alt=&quot;&quot;>'">
-            <source src="assets/video/cubes-logo.mp4" type="video/mp4">
-        </video>
+        <!-- ⏳ VIDÉO EN ATTENTE : le fichier assets/video/cubes-logo.mp4
+             n'a pas encore été fourni. En attendant, on affiche l'image
+             hero.jpg directement (zéro requête 404, zéro erreur console).
+
+             Quand la vidéo sera placée dans assets/video/, remplacez
+             la balise <img> ci-dessous par ce bloc :
+
+             <video autoplay muted loop playsinline preload="metadata"
+                    poster="assets/img/hero.jpg">
+                 <source src="assets/video/cubes-logo.mp4" type="video/mp4">
+             </video>
+        -->
+        <img src="assets/img/hero.jpg" alt="">
     </div>
 
     <p class="hero__ghost" aria-hidden="true">SMILE</p>

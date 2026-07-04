@@ -1,0 +1,26 @@
+# ------------------------------------------------------------------
+# .gitignore — ce qui ne doit JAMAIS entrer dans le dépôt Git
+# (item A4 de docs/ROADMAP.md — garde-fou contre les fuites)
+# ------------------------------------------------------------------
+
+# Fichiers déposés par les clients / employés : données privées,
+# jamais versionnées. On garde uniquement le .htaccess de protection.
+public/uploads/*
+!public/uploads/.htaccess
+
+# Dépendances Composer : se réinstallent avec "composer install".
+/vendor/
+
+# Configuration locale contenant de vrais secrets (prod, mots de passe).
+config/config.local.php
+
+# Vidéos lourdes placées à la main (trop volumineuses pour Git).
+public/assets/video/*.mp4
+
+# Fichiers générés par Windows / macOS / les éditeurs.
+Thumbs.db
+desktop.ini
+.DS_Store
+*.log
+/.vscode/
+/.idea/

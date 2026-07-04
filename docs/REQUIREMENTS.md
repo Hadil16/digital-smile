@@ -62,11 +62,11 @@ Statuts facture : `unpaid → partial → paid`.
 
 ## 3. Liste TODO consolidée (manques constatés)
 
-1. **`public/index.php` (front controller) n'existe pas** alors que `public/.htaccess` redirige déjà tout vers lui — toute URL propre renvoie actuellement une erreur 404.
+1. ~~`public/index.php` (front controller) n'existe pas~~ — **RÉSOLU 05/07/2026** (item A1 roadmap) : `index.php` + `Router` + page 404 en place.
 2. **Système i18n non câblé** : aucun loader des fichiers `lang/*.php`, pas de sélecteur de langue, pas de CSS RTL.
-3. **Dossiers `app/Controllers/`, `app/Models/`, `app/Views/`, `app/Middleware/` absents** (annoncés dans `README.md`).
+3. **Dossiers `app/Models/` et `app/Middleware/` absents** (annoncés dans `README.md`) — `app/Controllers/` et `app/Views/` créés le 05/07/2026.
 4. **Logique de génération des codes** `DS-AAAA-NNNN` / `FAC-AAAA-NNNN` à écrire.
-5. **Aucun `.gitignore`** (risque : commit de `uploads/`, de `vendor/` futur, de configs locales).
-6. **Vidéo héros `public/assets/video/cubes-logo.mp4` absente** (référencée par `index.html`).
-7. **Incohérence documentaire** : « 15 tables » annoncées partout, **17 réellement créées** (voir `docs/DATABASE.md`).
+5. ~~Aucun `.gitignore`~~ — **RÉSOLU 05/07/2026** (item A4 roadmap).
+6. **Vidéo héros `public/assets/video/cubes-logo.mp4` absente** — la référence a été neutralisée le 05/07/2026 (plus de 404) ; reste à fournir le fichier vidéo.
+7. ~~Incohérence documentaire « 15 tables » vs 17~~ — **RÉSOLU 05/07/2026** (item A5 roadmap) : « 17 tables » partout.
 8. **Aucun test automatisé** (aucun framework de test présent).

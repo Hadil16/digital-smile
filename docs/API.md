@@ -15,10 +15,11 @@ Seules pages HTTP existantes aujourd'hui :
 
 | URL | Méthode | Rôle | Statut |
 |---|---|---|---|
-| `/public/index.html` | GET | Page d'accueil statique | ✅ Existe |
+| `/` (racine du site) | GET | Accueil, servi par le front controller (`HomeController` → `index.html`) | ✅ Depuis le 05/07/2026 |
+| `/public/index.html` | GET | Page d'accueil statique (accès direct) | ✅ Existe |
 | `/public/health.php` | GET | Bilan de santé (dev) | ✅ Existe — à supprimer en prod |
-| `/public/install.php` | GET | Création du compte admin | ✅ Existe — à supprimer après usage |
-| toute autre URL | * | Réécrite vers `index.php?url=...` par `public/.htaccess` | ❌ **404 : `index.php` n'existe pas encore** |
+| `/public/install.php` | GET+POST | Création du compte admin — **formulaire + jeton CSRF** (plus de mot de passe en dur) | ✅ Refondu le 05/07/2026 — à supprimer après usage |
+| toute autre URL | * | Réécrite vers `index.php?url=...` → **page 404 propre** (`app/Views/errors/404.php`, code HTTP 404) | ✅ Depuis le 05/07/2026 |
 
 ## 2. Routes prévues (Phase 5-6) — plan indicatif, non implémenté
 

@@ -2,7 +2,7 @@
 --  DIGITAL SMILE - Base de données (schema.sql)
 --  Moteur : MySQL / MariaDB (XAMPP)
 --  Encodage : utf8mb4 (support complet FR / AR / EN + emojis)
---  Architecture : 15 tables, conçue simple mais extensible.
+--  Architecture : 17 tables, conçue simple mais extensible.
 --
 --  COMMENT UTILISER :
 --  1. Ouvrez phpMyAdmin (http://localhost/phpmyadmin)

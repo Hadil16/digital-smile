@@ -10,11 +10,11 @@
 
 | Item | Pourquoi | Bénéfice | Prio | Cplx |
 |---|---|---|---|---|
-| A1. Créer le front controller `public/index.php` + Router minimal | Les `.htaccess` pointent vers un fichier absent (AUDIT C1) ; toute la Phase 5 en dépend | Fondation MVC opérationnelle, URLs propres | P1 | M |
-| A2. Retirer le mot de passe en dur d'`install.php` (formulaire de saisie) + changer le mot de passe admin | Identifiants en clair dans le web et l'historique Git (AUDIT C2) | Compte admin non compromis | P1 | S |
-| A3. Placer la vidéo `assets/video/cubes-logo.mp4` (compressée) ou retirer la balise `<source>` | 404 à chaque visite, promesse design non tenue (AUDIT C3) | Héros conforme au design validé | P1 | S |
-| A4. Créer `.gitignore` (uploads/*, vendor/, fichiers locaux) | Aucun garde-fou Git (AUDIT D8) | Dépôt propre, pas de fuite de fichiers clients | P1 | S |
-| A5. Corriger « 15 tables » → 17 (schema.sql, README, CLAUDE.md, health.php) | Incohérence documentaire (AUDIT D1) | Docs fiables, health-check juste | P1 | S |
+| ✅ A1. Créer le front controller `public/index.php` + Router minimal — **fait le 05/07/2026** | Les `.htaccess` pointent vers un fichier absent (AUDIT C1) ; toute la Phase 5 en dépend | Fondation MVC opérationnelle, URLs propres | P1 | M |
+| ✅ A2. Retirer le mot de passe en dur d'`install.php` (formulaire de saisie) — **fait le 05/07/2026** ; ⚠️ reste à changer le mot de passe admin si le compte a déjà été créé avec `Admin@2026` | Identifiants en clair dans le web et l'historique Git (AUDIT C2) | Compte admin non compromis | P1 | S |
+| ✅ A3. Vidéo héros : balise `<source>` neutralisée (image `hero.jpg` affichée, bloc `<video>` prêt en commentaire) — **fait le 05/07/2026** ; reste à fournir le fichier `cubes-logo.mp4` compressé | 404 à chaque visite, promesse design non tenue (AUDIT C3) | Héros conforme au design validé | P1 | S |
+| ✅ A4. Créer `.gitignore` (uploads/*, vendor/, fichiers locaux) — **fait le 05/07/2026** | Aucun garde-fou Git (AUDIT D8) | Dépôt propre, pas de fuite de fichiers clients | P1 | S |
+| ✅ A5. Corriger « 15 tables » → 17 (schema.sql, README, CLAUDE.md, health.php) — **fait le 05/07/2026** | Incohérence documentaire (AUDIT D1) | Docs fiables, health-check juste | P1 | S |
 
 ## Phase B — Architecture (Phases 5-6 du projet)
 
