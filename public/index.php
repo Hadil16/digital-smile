@@ -18,6 +18,7 @@
 
 // 1. Configuration + classes de base.
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../app/Core/helpers.php';
 require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
