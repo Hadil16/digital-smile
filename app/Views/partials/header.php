@@ -34,6 +34,7 @@
         <a href="#chiffres">Chiffres</a>
         <a href="#contact">Contact</a>
     </div>
-    <a href="#contact" class="nav__cta">Connexion</a>
+    <a href="<?= e(BASE_URL) ?>/login" class="nav__cta">Connexion</a>
+    <a href="<?= e(BASE_URL) ?>/register" class="nav__cta nav__cta--ghost">S'inscrire</a>
     <button class="nav__burger" aria-label="Menu">&#9776;</button>
 </nav>
