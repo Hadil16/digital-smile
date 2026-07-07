@@ -27,4 +27,21 @@ class Employee extends Model
         );
         return $stmt->fetchAll();
     }
+
+    /**
+     * Liste détaillée des employés (nom, email, département) pour la vue
+     * d'ensemble de l'admin. Ignore les comptes soft-supprimés.
+     */
+    public function allWithDetails(): array
+    {
+        $stmt = $this->db->query(
+            "SELECT u.full_name, u.email, d.name AS department_name
+             FROM employees e
+             JOIN users u       ON u.id = e.user_id
+             JOIN departments d ON d.id = e.department_id
+             WHERE u.deleted_at IS NULL
+             ORDER BY u.full_name ASC"
+        );
+        return $stmt->fetchAll();
+    }
 }

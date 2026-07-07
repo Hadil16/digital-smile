@@ -11,11 +11,15 @@
 class AdminController
 {
     // Modèles chargés en "lazy" (pas de connexion DB inutile).
-    private ?Order    $orderModel    = null;
-    private ?Employee $employeeModel = null;
+    private ?Order      $orderModel      = null;
+    private ?Employee   $employeeModel   = null;
+    private ?User       $userModel       = null;
+    private ?Department $departmentModel = null;
 
-    private function orderM(): Order       { return $this->orderModel    ??= new Order(); }
-    private function employeeM(): Employee { return $this->employeeModel ??= new Employee(); }
+    private function orderM(): Order          { return $this->orderModel      ??= new Order(); }
+    private function employeeM(): Employee    { return $this->employeeModel   ??= new Employee(); }
+    private function userM(): User            { return $this->userModel       ??= new User(); }
+    private function deptM(): Department       { return $this->departmentModel ??= new Department(); }
 
     /** Tableau de bord : accès à la gestion des demandes + nombre en attente. */
     public function dashboard(): void
@@ -88,5 +92,65 @@ class AdminController
         $this->orderM()->assignEmployee($orderId, $employeeId);
         $_SESSION['flash'] = 'Commande affectée à l\'employé.';
         redirect('/admin/commandes');
+    }
+
+    /** Gestion de l'équipe : formulaire de création + liste des employés. */
+    public function employees(): void
+    {
+        require_role('admin');
+        $employees   = $this->employeeM()->allWithDetails();
+        $departments = $this->deptM()->allActive();
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
+        $error = null;
+        $old   = ['name' => '', 'email' => '', 'department_id' => ''];
+        require ROOT_PATH . '/app/Views/admin/employees.php';
+    }
+
+    /** Crée un compte employé après validation (email unique, département valide). */
+    public function createEmployee(): void
+    {
+        require_role('admin');
+
+        // Données pour valider ET ré-afficher la page en cas d'erreur.
+        $departments  = $this->deptM()->allActive();
+        $employees    = $this->employeeM()->allWithDetails();
+        $validDeptIds = array_map('intval', array_column($departments, 'id'));
+        $flash        = null;
+
+        $old = [
+            'name'          => trim($_POST['name'] ?? ''),
+            'email'         => trim($_POST['email'] ?? ''),
+            'department_id' => (string) ($_POST['department_id'] ?? ''),
+        ];
+        $password = (string) ($_POST['password'] ?? '');
+
+        // Validation, messages en français.
+        $error = null;
+        if (!csrf_verify()) {
+            $error = 'Session expirée, merci de réessayer.';
+        } elseif ($old['name'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
+            $error = 'Merci de saisir un nom, un email valide et un mot de passe d\'au moins 8 caractères.';
+        } elseif (!in_array((int) $old['department_id'], $validDeptIds, true)) {
+            $error = 'Merci de choisir un département valide.';
+        } elseif ($this->userM()->emailExists($old['email'])) {
+            $error = 'Un compte existe déjà avec cet email.';
+        }
+
+        if ($error !== null) {
+            require ROOT_PATH . '/app/Views/admin/employees.php';
+            return;
+        }
+
+        $this->userM()->createEmployee([
+            'name'          => $old['name'],
+            'email'         => $old['email'],
+            'password'      => $password,
+            'department_id' => (int) $old['department_id'],
+        ]);
+        $_SESSION['flash'] = 'Employé créé : ' . $old['name'] . '.';
+        redirect('/admin/employes');
     }
 }

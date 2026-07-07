@@ -26,8 +26,9 @@ Seules pages HTTP existantes aujourd'hui :
 | `/client` | GET | Tableau de bord client : bouton « nouvelle demande » + tableau de ses commandes (numéro, service, statut, budget, échéance, date). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
 | `/client/nouvelle-demande` | GET+POST | Demande de projet. GET = formulaire (service, description, budget optionnel, échéance) ; POST (`csrf`, `service_id`, `description`, `budget`, `deadline`) = valide puis crée la commande (`code` DS-AAAA-NNNN, statut `pending`) → redirige `/client`. Garde `require_role('client')` | ✅ Depuis le 07/07/2026 |
 | `/employe` | GET | Tableau de bord employé. Garde `require_role('employee')` (même logique) | ✅ Depuis le 07/07/2026 |
-| `/admin` | GET | Tableau de bord admin : bouton « gérer les demandes » + nombre de demandes en attente. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
+| `/admin` | GET | Tableau de bord admin : boutons « gérer les demandes » + « gérer l'équipe » + nombre de demandes en attente. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes` | GET | Revue des demandes : demandes en attente (avec actions) + vue d'ensemble + liste des employés. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
+| `/admin/employes` | GET+POST | Gestion de l'équipe. GET = formulaire + liste des employés. POST (`csrf`, `name`, `email`, `password`≥8, `department_id`) = crée un compte employé (rôle `employee`, `password_hash` BCRYPT, fiche `employees` liée) → redirige avec flash. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes/approuver` | POST | `csrf` + `order_id` → statut `approved`. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes/refuser` | POST | `csrf` + `order_id` → statut `rejected`. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes/affecter` | POST | `csrf` + `order_id` + `employee_id` → statut `in_progress` + crée/maj le `projects` (employé, statut `assigned`). Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
