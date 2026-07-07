@@ -23,6 +23,9 @@ Seules pages HTTP existantes aujourd'hui :
 | `/register` | GET+POST | Inscription client. GET = formulaire ; POST (`csrf`, `name`, `email`, `password`≥8) = crée le user (rôle `client`, `password_hash` BCRYPT), ouvre la session, redirige `/client` | ✅ Depuis le 07/07/2026 |
 | `/login` | GET+POST | Connexion tous rôles. GET = formulaire ; POST (`csrf`, `email`, `password`) = `password_verify` → session + `session_regenerate_id`, redirige selon le rôle (`admin`→`/admin`, `employee`→`/employe`, `client`→`/client`). Échec = message générique | ✅ Depuis le 07/07/2026 |
 | `/logout` | GET | Détruit la session + le cookie, redirige `/` | ✅ Depuis le 07/07/2026 |
+| `/client` | GET | Tableau de bord client (vide, Phase 6). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
+| `/employe` | GET | Tableau de bord employé. Garde `require_role('employee')` (même logique) | ✅ Depuis le 07/07/2026 |
+| `/admin` | GET | Tableau de bord admin. Garde `require_role('admin')` (même logique) | ✅ Depuis le 07/07/2026 |
 | toute autre URL | * | Réécrite vers `index.php?url=...` → **page 404 propre** (`app/Views/errors/404.php`, code HTTP 404) | ✅ Depuis le 05/07/2026 |
 
 ## 2. Routes prévues (Phase 5-6) — plan indicatif, non implémenté

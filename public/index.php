@@ -25,6 +25,10 @@ require_once __DIR__ . '/../app/Core/Model.php';                 // classe mère
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Models/User.php';                // (dépend de Model)
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
+require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
+require_once __DIR__ . '/../app/Controllers/ClientController.php';
+require_once __DIR__ . '/../app/Controllers/EmployeeController.php';
+require_once __DIR__ . '/../app/Controllers/AdminController.php';
 
 // 1 bis. Session durcie : cookie HttpOnly + SameSite (+ Secure en HTTPS).
 //        On la démarre AVANT toute écriture de session ou jeton CSRF.
@@ -48,6 +52,12 @@ $auth = new AuthController(); // aucune connexion DB tant qu'aucune méthode mod
 $router->add('login',    fn() => $_SERVER['REQUEST_METHOD'] === 'POST' ? $auth->login()    : $auth->showLogin());
 $router->add('register', fn() => $_SERVER['REQUEST_METHOD'] === 'POST' ? $auth->register() : $auth->showRegister());
 $router->add('logout',   [$auth, 'logout']);
+
+// Tableaux de bord par rôle. Le contrôle d'accès (RBAC) est fait
+// dans chaque dashboard() via require_role().
+$router->add('client',  [new ClientController(),   'dashboard']);
+$router->add('employe', [new EmployeeController(), 'dashboard']);
+$router->add('admin',   [new AdminController(),    'dashboard']);
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
