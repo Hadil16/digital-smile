@@ -88,4 +88,19 @@ $router->add('employe/taches/livrer',       [new EmployeeController(), 'uploadFi
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
-$router->dispatch((string)($_GET['url'] ?? ''));
+$url = trim((string) ($_GET['url'] ?? ''), '/');
+
+// Le Router fait une correspondance EXACTE (pas de paramètres). Les pages de
+// commande du client portent un numéro variable : on les reconnaît ici et on
+// extrait le numéro de façon sûre (uniquement lettres, chiffres et tirets).
+if (preg_match('#^client/commande/([A-Za-z0-9\-]+)(?:/(telecharger|confirmer))?$#', $url, $m)) {
+    $client = new ClientController();
+    $number = $m[1];
+    match ($m[2] ?? '') {
+        'telecharger' => $client->downloadFile($number),
+        'confirmer'   => $client->confirmReception($number),
+        default       => $client->showOrder($number),
+    };
+} else {
+    $router->dispatch($url);
+}

@@ -89,4 +89,83 @@ class ClientController
 
         redirect('/client');
     }
+
+    /** Détail d'une commande (avec contrôle de propriété par le numéro). */
+    public function showOrder(string $number): void
+    {
+        require_role('client');
+
+        $order = $this->orders()->findForClient($number, (int) $_SESSION['user_id']);
+        if ($order === null) {
+            $this->notFound();          // pas la sienne (ou inexistante)
+            return;
+        }
+
+        // Livrable proposé seulement quand la commande est livrée/terminée.
+        $deliverable = in_array($order['status'], ['delivered', 'completed'], true)
+            ? $this->orders()->deliverableFor((int) $order['id'])
+            : null;
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
+        require ROOT_PATH . '/app/Views/client/order-detail.php';
+    }
+
+    /** Télécharge le livrable en flux, avec contrôle de propriété strict. */
+    public function downloadFile(string $number): void
+    {
+        require_role('client');
+
+        $order = $this->orders()->findForClient($number, (int) $_SESSION['user_id']);
+        if ($order === null) { $this->notFound(); return; }
+
+        $file = $this->orders()->deliverableFor((int) $order['id']);
+        if ($file === null) { $this->notFound(); return; }
+
+        // On ne fait JAMAIS confiance au chemin stocké : on ne garde que le nom
+        // de fichier (anti-traversée) et on le cherche dans le dossier uploads.
+        $absolute = UPLOAD_PATH . '/' . basename($file['stored_path']);
+        if (!is_file($absolute)) { $this->notFound(); return; }
+
+        // Nom présenté = nom d'origine, nettoyé pour éviter l'injection d'en-tête.
+        $original  = $file['original_name'] !== '' ? $file['original_name'] : basename($absolute);
+        $asciiName = preg_replace('/[\r\n"]+/', '_', $original);
+
+        header('Content-Type: application/octet-stream');       // force le téléchargement
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Length: ' . (string) filesize($absolute));
+        header(
+            "Content-Disposition: attachment; filename=\"$asciiName\"; "
+            . "filename*=UTF-8''" . rawurlencode($original)
+        );
+        readfile($absolute);
+        exit;
+    }
+
+    /** Le client confirme la réception -> commande 'completed'. */
+    public function confirmReception(string $number): void
+    {
+        require_role('client');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/client/commande/' . rawurlencode($number));
+        }
+
+        $order = $this->orders()->findForClient($number, (int) $_SESSION['user_id']);
+        if ($order === null) { $this->notFound(); return; }
+
+        $ok = $this->orders()->markCompleted((int) $order['id'], (int) $_SESSION['user_id']);
+        $_SESSION['flash'] = $ok
+            ? 'Réception confirmée, merci !'
+            : 'Cette commande ne peut pas être confirmée pour le moment.';
+        redirect('/client/commande/' . rawurlencode($number));
+    }
+
+    /** Page 404 propre du site (commande introuvable ou non autorisée). */
+    private function notFound(): void
+    {
+        http_response_code(404);
+        require ROOT_PATH . '/app/Views/errors/404.php';
+    }
 }

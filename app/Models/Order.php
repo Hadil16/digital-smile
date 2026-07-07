@@ -157,6 +157,60 @@ class Order extends Model
         }
     }
 
+    /**
+     * Renvoie UNE commande (détails complets) par son numéro, mais SEULEMENT
+     * si elle appartient à ce client (contrôle de propriété par clients.user_id).
+     * null si introuvable OU pas à lui (on ne révèle pas la différence).
+     */
+    public function findForClient(string $number, int $clientUserId): ?array
+    {
+        $sql = "SELECT o.id, o.code, o.project_name, o.status, o.budget, o.deadline,
+                       o.description, o.created_at, o.updated_at,
+                       s.name AS service_name
+                FROM orders o
+                JOIN clients  c ON c.id = o.client_id
+                JOIN services s ON s.id = o.service_id
+                WHERE o.code = :code AND c.user_id = :uid
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':code' => $number, ':uid' => $clientUserId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    /**
+     * Renvoie le fichier LIVRABLE lié à une commande (via son projet), ou null.
+     * On remonte files → projects → orders et on ne garde que kind='deliverable'.
+     */
+    public function deliverableFor(int $orderId): ?array
+    {
+        $sql = "SELECT f.id, f.original_name, f.stored_path, f.size_bytes
+                FROM files f
+                JOIN projects p ON p.id = f.project_id
+                WHERE p.order_id = :oid AND f.kind = 'deliverable'
+                ORDER BY f.id DESC
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':oid' => $orderId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    /**
+     * Le client confirme la réception : passe la commande à 'completed'.
+     * Propriété ET statut de départ ('delivered') vérifiés DANS la requête,
+     * donc rien n'est modifié si ce n'est pas sa commande ou si elle n'est
+     * pas encore livrée. Renvoie true si une ligne a bien été mise à jour.
+     */
+    public function markCompleted(int $orderId, int $clientUserId): bool
+    {
+        $sql = "UPDATE orders o
+                JOIN clients c ON c.id = o.client_id
+                SET o.status = 'completed'
+                WHERE o.id = :oid AND c.user_id = :uid AND o.status = 'delivered'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':oid' => $orderId, ':uid' => $clientUserId]);
+        return $stmt->rowCount() > 0;
+    }
+
     /** Renvoie l'id de la fiche client de l'utilisateur, en la créant si besoin. */
     private function clientIdForUser(int $userId): int
     {

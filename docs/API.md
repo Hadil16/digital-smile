@@ -25,6 +25,9 @@ Seules pages HTTP existantes aujourd'hui :
 | `/logout` | GET | Détruit la session + le cookie, redirige `/` | ✅ Depuis le 07/07/2026 |
 | `/client` | GET | Tableau de bord client : bouton « nouvelle demande » + tableau de ses commandes (numéro, service, statut, budget, échéance, date). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
 | `/client/nouvelle-demande` | GET+POST | Demande de projet. GET = formulaire (service, description, budget optionnel, échéance) ; POST (`csrf`, `service_id`, `description`, `budget`, `deadline`) = valide puis crée la commande (`code` DS-AAAA-NNNN, statut `pending`) → redirige `/client`. Garde `require_role('client')` | ✅ Depuis le 07/07/2026 |
+| `/client/commande/{numero}` | GET | Détail d'une commande (infos + frise de statut). **Propriété** vérifiée par le numéro ; sinon 404. Garde `require_role('client')` | ✅ Depuis le 08/07/2026 |
+| `/client/commande/{numero}/telecharger` | GET | Télécharge le livrable **en flux via PHP** (Content-Disposition, nom d'origine ; chemin réel jamais exposé). Propriété vérifiée. Garde `require_role('client')` | ✅ Depuis le 08/07/2026 |
+| `/client/commande/{numero}/confirmer` | POST | `csrf` + propriété + statut `delivered` → statut `completed` → redirige au détail avec flash. Garde `require_role('client')` | ✅ Depuis le 08/07/2026 |
 | `/employe` | GET | Tableau de bord employé : bouton « mes tâches » + nombre de tâches assignées. Garde `require_role('employee')` | ✅ Depuis le 07/07/2026 |
 | `/employe/taches` | GET | Tâches assignées (cartes : infos, barre de progression, formulaires). Garde `require_role('employee')` | ✅ Depuis le 08/07/2026 |
 | `/employe/taches/progression` | POST | `csrf` + `project_id` + `progress` (0-100). Contrôle de propriété ; borne 0..100 ; à 100 % la commande passe `delivered`, sinon `in_progress`. Garde `require_role('employee')` | ✅ Depuis le 08/07/2026 |
@@ -51,11 +54,13 @@ Ces routes serviront le workflow des commandes via le front controller
 > (l'assignation automatique par département reste à faire).
 > `/employee/projects` (+ progress/deliver) est **implémenté** sous
 > `/employe/taches` (+ `/progression`, `/livrer`) (voir §1).
+> `/client/orders/{code}` (+ download) est **implémenté** sous
+> `/client/commande/{numero}` (+ `/telecharger`, `/confirmer`) (voir §1).
+> Le Router faisant une correspondance exacte, le numéro est extrait du
+> chemin dans `public/index.php` (regex `[A-Za-z0-9\-]+`).
 
 | Route (cible) | Méthode | Rôle métier | Accès (RBAC) |
 |---|---|---|---|
-| `/client/orders/{code}` | GET | Détail, progression, livrables, facture | client propriétaire |
-| `/client/orders/{code}/download/{fileId}` | GET | Télécharger un livrable **via PHP avec contrôle de droits** | client propriétaire |
 | `/admin/invoices/{code}` | GET | Facture (HTML, PDF via Dompdf en Phase 8) | admin / client concerné |
 
 ## 3. Règles non négociables pour toute future route (cf. `AI_RULES.md`)
