@@ -73,6 +73,90 @@ class Order extends Model
         return $stmt->fetchAll();
     }
 
+    /**
+     * Toutes les commandes en attente (statut 'pending'), les plus récentes
+     * d'abord. Jointures : client (nom) et service (nom).
+     */
+    public function allPending(): array
+    {
+        $sql = "SELECT o.id, o.code, u.full_name AS client_name, s.name AS service_name,
+                       o.project_name, o.budget, o.deadline, o.created_at
+                FROM orders o
+                JOIN clients  c ON c.id = o.client_id
+                JOIN users    u ON u.id = c.user_id
+                JOIN services s ON s.id = o.service_id
+                WHERE o.status = 'pending'
+                ORDER BY o.created_at DESC, o.id DESC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
+    /** Vue d'ensemble : toutes les commandes avec leur statut (pour l'admin). */
+    public function allWithStatus(): array
+    {
+        $sql = "SELECT o.id, o.code, u.full_name AS client_name, s.name AS service_name,
+                       o.status, o.budget, o.deadline, o.created_at
+                FROM orders o
+                JOIN clients  c ON c.id = o.client_id
+                JOIN users    u ON u.id = c.user_id
+                JOIN services s ON s.id = o.service_id
+                ORDER BY o.created_at DESC, o.id DESC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
+    /**
+     * Change le statut d'une commande. Liste blanche STRICTE : seuls
+     * 'approved', 'rejected', 'in_progress' sont acceptés depuis l'admin.
+     * Renvoie true si une ligne a bien été modifiée.
+     */
+    public function updateStatus(int $orderId, string $status): bool
+    {
+        $allowed = ['approved', 'rejected', 'in_progress'];
+        if (!in_array($status, $allowed, true)) {
+            return false;
+        }
+        $stmt = $this->db->prepare("UPDATE orders SET status = :status WHERE id = :id");
+        $stmt->execute([':status' => $status, ':id' => $orderId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Affecte un employé à une commande : la commande passe 'in_progress'
+     * et le projet correspondant est créé (ou mis à jour) avec l'employé.
+     * NB : l'affectation vit dans la table `projects` (orders n'a pas de
+     * colonne employé). order_id y est UNIQUE : 1 projet par commande.
+     * Le tout dans une transaction.
+     */
+    public function assignEmployee(int $orderId, int $employeeId): bool
+    {
+        $this->db->beginTransaction();
+        try {
+            // La commande avance au statut 'in_progress'.
+            $up = $this->db->prepare("UPDATE orders SET status = 'in_progress' WHERE id = :id");
+            $up->execute([':id' => $orderId]);
+
+            // Projet existant pour cette commande ? -> mise à jour, sinon création.
+            $sel = $this->db->prepare("SELECT id FROM projects WHERE order_id = :oid LIMIT 1");
+            $sel->execute([':oid' => $orderId]);
+
+            if ($sel->fetchColumn() !== false) {
+                $q = $this->db->prepare("UPDATE projects SET employee_id = :emp WHERE order_id = :oid");
+                $q->execute([':emp' => $employeeId, ':oid' => $orderId]);
+            } else {
+                // 'assigned' = statut de départ d'un projet (cf. schema).
+                $q = $this->db->prepare(
+                    "INSERT INTO projects (order_id, employee_id, status) VALUES (:oid, :emp, 'assigned')"
+                );
+                $q->execute([':oid' => $orderId, ':emp' => $employeeId]);
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     /** Renvoie l'id de la fiche client de l'utilisateur, en la créant si besoin. */
     private function clientIdForUser(int $userId): int
     {

@@ -26,6 +26,7 @@ require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Models/User.php';                // (dépend de Model)
 require_once __DIR__ . '/../app/Models/Service.php';             // catalogue (formulaire)
 require_once __DIR__ . '/../app/Models/Order.php';               // commandes
+require_once __DIR__ . '/../app/Models/Employee.php';            // employés (affectation)
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
@@ -65,6 +66,13 @@ $router->add('admin',   [new AdminController(),    'dashboard']);
 $router->add('client/nouvelle-demande', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'
     ? (new ClientController())->createOrder()
     : (new ClientController())->showNewOrder());
+
+// Revue des demandes par l'admin. Les 3 mutations exigent un POST + jeton CSRF
+// (vérifié dans le contrôleur) ; la liste est en GET.
+$router->add('admin/commandes',           [new AdminController(), 'orders']);
+$router->add('admin/commandes/approuver',  [new AdminController(), 'approveOrder']);
+$router->add('admin/commandes/refuser',    [new AdminController(), 'rejectOrder']);
+$router->add('admin/commandes/affecter',   [new AdminController(), 'assignOrder']);
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
