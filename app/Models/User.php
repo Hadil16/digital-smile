@@ -69,4 +69,42 @@ class User extends Model
             'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
         ]);
     }
+
+    /**
+     * Crée un compte EMPLOYÉ et renvoie l'id du user créé.
+     * Deux écritures dans UNE transaction : la ligne `users` (rôle employee,
+     * mot de passe BCRYPT) puis la fiche `employees` liée + son département.
+     *
+     * @param array $data ['name', 'email', 'password', 'department_id']
+     */
+    public function createEmployee(array $data): int
+    {
+        $this->db->beginTransaction();
+        try {
+            // 1. Compte utilisateur (rôle employee).
+            $u = $this->db->prepare(
+                "INSERT INTO users (role_id, full_name, email, password_hash)
+                 VALUES (:role_id, :full_name, :email, :hash)"
+            );
+            $u->execute([
+                ':role_id'   => $this->roleId('employee'),
+                ':full_name' => $data['name'],
+                ':email'     => $data['email'],
+                ':hash'      => password_hash($data['password'], PASSWORD_BCRYPT),
+            ]);
+            $userId = (int) $this->db->lastInsertId();
+
+            // 2. Fiche employé, rattachée au département choisi.
+            $e = $this->db->prepare(
+                "INSERT INTO employees (user_id, department_id) VALUES (:uid, :dept)"
+            );
+            $e->execute([':uid' => $userId, ':dept' => (int) $data['department_id']]);
+
+            $this->db->commit();
+            return $userId;
+        } catch (Throwable $ex) {
+            $this->db->rollBack();
+            throw $ex; // on laisse remonter
+        }
+    }
 }

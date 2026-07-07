@@ -27,6 +27,7 @@ require_once __DIR__ . '/../app/Models/User.php';                // (dépend de 
 require_once __DIR__ . '/../app/Models/Service.php';             // catalogue (formulaire)
 require_once __DIR__ . '/../app/Models/Order.php';               // commandes
 require_once __DIR__ . '/../app/Models/Employee.php';            // employés (affectation)
+require_once __DIR__ . '/../app/Models/Department.php';          // départements (création employé)
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
@@ -73,6 +74,11 @@ $router->add('admin/commandes',           [new AdminController(), 'orders']);
 $router->add('admin/commandes/approuver',  [new AdminController(), 'approveOrder']);
 $router->add('admin/commandes/refuser',    [new AdminController(), 'rejectOrder']);
 $router->add('admin/commandes/affecter',   [new AdminController(), 'assignOrder']);
+
+// Gestion de l'équipe : GET = formulaire + liste, POST = création (CSRF vérifié).
+$router->add('admin/employes', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'
+    ? (new AdminController())->createEmployee()
+    : (new AdminController())->employees());
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).

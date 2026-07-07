@@ -43,6 +43,7 @@ require ROOT_PATH . '/app/Views/partials/header.php';
 
         <div class="dash__actions">
             <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/commandes">Gérer les demandes</a>
+            <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/employes">Gérer l'équipe</a>
             <a class="dash__btn dash__btn--ghost" href="<?= e(BASE_URL) ?>/logout">Déconnexion</a>
         </div>
     </section>
