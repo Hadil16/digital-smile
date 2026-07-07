@@ -46,8 +46,11 @@ $statusLabels = [
     .table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
     .table th, .table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
     .table th { background: #faf9ff; color: #555; font-weight: 600; white-space: nowrap; }
+    .table tbody tr:hover { background: #faf9ff; }
     .table tr:last-child td { border-bottom: 0; }
     .table td:first-child { font-weight: 600; color: var(--violet); white-space: nowrap; }
+    .code-link { color: inherit; text-decoration: none; }
+    .code-link:hover { text-decoration: underline; }
     .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
     .badge--pending     { background: #fff7e6; color: #b8860b; }
     .badge--approved    { background: #ece9fb; color: #4A3F9E; }
@@ -91,7 +94,12 @@ $statusLabels = [
                     <tbody>
                         <?php foreach ($orders as $o): ?>
                             <tr>
-                                <td><?= e($o['code']) ?></td>
+                                <td>
+                                    <a class="code-link"
+                                       href="<?= e(BASE_URL) ?>/client/commande/<?= e(rawurlencode($o['code'])) ?>">
+                                        <?= e($o['code']) ?>
+                                    </a>
+                                </td>
                                 <td><?= e($o['service_name']) ?></td>
                                 <td>
                                     <span class="badge badge--<?= e($o['status']) ?>">
