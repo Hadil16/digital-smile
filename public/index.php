@@ -28,6 +28,7 @@ require_once __DIR__ . '/../app/Models/Service.php';             // catalogue (f
 require_once __DIR__ . '/../app/Models/Order.php';               // commandes
 require_once __DIR__ . '/../app/Models/Employee.php';            // employés (affectation)
 require_once __DIR__ . '/../app/Models/Department.php';          // départements (création employé)
+require_once __DIR__ . '/../app/Models/Project.php';             // projets (espace employé)
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
@@ -79,6 +80,11 @@ $router->add('admin/commandes/affecter',   [new AdminController(), 'assignOrder'
 $router->add('admin/employes', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'
     ? (new AdminController())->createEmployee()
     : (new AdminController())->employees());
+
+// Espace employé : liste des tâches (GET) + 2 mutations POST (CSRF vérifié).
+$router->add('employe/taches',              [new EmployeeController(), 'tasks']);
+$router->add('employe/taches/progression',  [new EmployeeController(), 'updateProgress']);
+$router->add('employe/taches/livrer',       [new EmployeeController(), 'uploadFile']);
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).

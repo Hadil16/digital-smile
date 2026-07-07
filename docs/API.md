@@ -25,7 +25,10 @@ Seules pages HTTP existantes aujourd'hui :
 | `/logout` | GET | Détruit la session + le cookie, redirige `/` | ✅ Depuis le 07/07/2026 |
 | `/client` | GET | Tableau de bord client : bouton « nouvelle demande » + tableau de ses commandes (numéro, service, statut, budget, échéance, date). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
 | `/client/nouvelle-demande` | GET+POST | Demande de projet. GET = formulaire (service, description, budget optionnel, échéance) ; POST (`csrf`, `service_id`, `description`, `budget`, `deadline`) = valide puis crée la commande (`code` DS-AAAA-NNNN, statut `pending`) → redirige `/client`. Garde `require_role('client')` | ✅ Depuis le 07/07/2026 |
-| `/employe` | GET | Tableau de bord employé. Garde `require_role('employee')` (même logique) | ✅ Depuis le 07/07/2026 |
+| `/employe` | GET | Tableau de bord employé : bouton « mes tâches » + nombre de tâches assignées. Garde `require_role('employee')` | ✅ Depuis le 07/07/2026 |
+| `/employe/taches` | GET | Tâches assignées (cartes : infos, barre de progression, formulaires). Garde `require_role('employee')` | ✅ Depuis le 08/07/2026 |
+| `/employe/taches/progression` | POST | `csrf` + `project_id` + `progress` (0-100). Contrôle de propriété ; borne 0..100 ; à 100 % la commande passe `delivered`, sinon `in_progress`. Garde `require_role('employee')` | ✅ Depuis le 08/07/2026 |
+| `/employe/taches/livrer` | POST (multipart) | `csrf` + `project_id` + `file`. Contrôle de propriété + fichier (PDF/JPG/PNG/ZIP, 10 Mo max, extension+MIME, nom aléatoire) → ligne `files` + commande `delivered`. Garde `require_role('employee')` | ✅ Depuis le 08/07/2026 |
 | `/admin` | GET | Tableau de bord admin : boutons « gérer les demandes » + « gérer l'équipe » + nombre de demandes en attente. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes` | GET | Revue des demandes : demandes en attente (avec actions) + vue d'ensemble + liste des employés. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/employes` | GET+POST | Gestion de l'équipe. GET = formulaire + liste des employés. POST (`csrf`, `name`, `email`, `password`≥8, `department_id`) = crée un compte employé (rôle `employee`, `password_hash` BCRYPT, fiche `employees` liée) → redirige avec flash. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
@@ -46,13 +49,12 @@ Ces routes serviront le workflow des commandes via le front controller
 > (+ `/approuver`, `/refuser`) et l'**affectation** à un employé via
 > `/admin/commandes/affecter` (voir §1). L'affectation ici est **manuelle**
 > (l'assignation automatique par département reste à faire).
+> `/employee/projects` (+ progress/deliver) est **implémenté** sous
+> `/employe/taches` (+ `/progression`, `/livrer`) (voir §1).
 
 | Route (cible) | Méthode | Rôle métier | Accès (RBAC) |
 |---|---|---|---|
 | `/client/orders/{code}` | GET | Détail, progression, livrables, facture | client propriétaire |
-| `/employee/projects` | GET | Mes projets assignés | employé |
-| `/employee/projects/{id}/progress` | POST | Mettre à jour le % (0-100) | employé assigné |
-| `/employee/projects/{id}/deliver` | POST (multipart) | Déposer le livrable → `delivered` | employé assigné |
 | `/client/orders/{code}/download/{fileId}` | GET | Télécharger un livrable **via PHP avec contrôle de droits** | client propriétaire |
 | `/admin/invoices/{code}` | GET | Facture (HTML, PDF via Dompdf en Phase 8) | admin / client concerné |
 
