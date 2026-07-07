@@ -4,9 +4,11 @@
 # ------------------------------------------------------------------
 
 # Fichiers déposés par les clients / employés : données privées,
-# jamais versionnées. On garde uniquement le .htaccess de protection.
+# jamais versionnées. On garde les gardes-fous : .htaccess (exécution
+# interdite) et index.html (pas de listage du dossier).
 public/uploads/*
 !public/uploads/.htaccess
+!public/uploads/index.html
 
 # Dépendances Composer : se réinstallent avec "composer install".
 /vendor/
