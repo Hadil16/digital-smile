@@ -23,7 +23,8 @@ Seules pages HTTP existantes aujourd'hui :
 | `/register` | GET+POST | Inscription client. GET = formulaire ; POST (`csrf`, `name`, `email`, `password`≥8) = crée le user (rôle `client`, `password_hash` BCRYPT), ouvre la session, redirige `/client` | ✅ Depuis le 07/07/2026 |
 | `/login` | GET+POST | Connexion tous rôles. GET = formulaire ; POST (`csrf`, `email`, `password`) = `password_verify` → session + `session_regenerate_id`, redirige selon le rôle (`admin`→`/admin`, `employee`→`/employe`, `client`→`/client`). Échec = message générique | ✅ Depuis le 07/07/2026 |
 | `/logout` | GET | Détruit la session + le cookie, redirige `/` | ✅ Depuis le 07/07/2026 |
-| `/client` | GET | Tableau de bord client (vide, Phase 6). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
+| `/client` | GET | Tableau de bord client : bouton « nouvelle demande » + tableau de ses commandes (numéro, service, statut, budget, échéance, date). Garde `require_role('client')` — non connecté → `/login`, autre rôle → **403** | ✅ Depuis le 07/07/2026 |
+| `/client/nouvelle-demande` | GET+POST | Demande de projet. GET = formulaire (service, description, budget optionnel, échéance) ; POST (`csrf`, `service_id`, `description`, `budget`, `deadline`) = valide puis crée la commande (`code` DS-AAAA-NNNN, statut `pending`) → redirige `/client`. Garde `require_role('client')` | ✅ Depuis le 07/07/2026 |
 | `/employe` | GET | Tableau de bord employé. Garde `require_role('employee')` (même logique) | ✅ Depuis le 07/07/2026 |
 | `/admin` | GET | Tableau de bord admin. Garde `require_role('admin')` (même logique) | ✅ Depuis le 07/07/2026 |
 | toute autre URL | * | Réécrite vers `index.php?url=...` → **page 404 propre** (`app/Views/errors/404.php`, code HTTP 404) | ✅ Depuis le 05/07/2026 |
@@ -33,12 +34,12 @@ Seules pages HTTP existantes aujourd'hui :
 Ces routes serviront le workflow des commandes via le front controller
 (`public/index.php?url=...`). Elles rendront du HTML (pas du JSON), sauf mention.
 
-> `/register`, `/login`, `/logout` sont désormais **implémentés** (voir §1).
+> `/register`, `/login`, `/logout` sont **implémentés** (voir §1).
+> `/client/orders` et `/client/orders/new` sont **implémentés** sous les URLs
+> `/client` et `/client/nouvelle-demande` (voir §1).
 
 | Route (cible) | Méthode | Rôle métier | Accès (RBAC) |
 |---|---|---|---|
-| `/client/orders` | GET | Mes commandes | client |
-| `/client/orders/new` | GET+POST | Formulaire de demande de projet (F6) → statut `pending` | client |
 | `/client/orders/{code}` | GET | Détail, progression, livrables, facture | client propriétaire |
 | `/admin/orders` | GET | File des demandes en attente | admin |
 | `/admin/orders/{code}/approve` | POST | Valider → `approved` + assignation auto (département du service) | admin |

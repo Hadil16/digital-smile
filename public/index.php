@@ -24,6 +24,8 @@ require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Core/Model.php';                 // classe mère des modèles
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Models/User.php';                // (dépend de Model)
+require_once __DIR__ . '/../app/Models/Service.php';             // catalogue (formulaire)
+require_once __DIR__ . '/../app/Models/Order.php';               // commandes
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
@@ -58,6 +60,11 @@ $router->add('logout',   [$auth, 'logout']);
 $router->add('client',  [new ClientController(),   'dashboard']);
 $router->add('employe', [new EmployeeController(), 'dashboard']);
 $router->add('admin',   [new AdminController(),    'dashboard']);
+
+// Nouvelle demande du client : GET = formulaire, POST = création.
+$router->add('client/nouvelle-demande', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'
+    ? (new ClientController())->createOrder()
+    : (new ClientController())->showNewOrder());
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
