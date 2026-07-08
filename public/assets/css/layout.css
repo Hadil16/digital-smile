@@ -66,6 +66,13 @@
 }
 .nav__theme:hover { border-color: var(--color-primary); }
 
+/* Groupe d'actions à droite : espacé avec les tokens d'espacement. */
+.nav__actions { display: flex; align-items: center; gap: var(--space-3); }
+/* Nom de l'utilisateur connecté. */
+.nav__user { font-weight: 600; font-size: 14px; color: var(--color-text); white-space: nowrap; }
+/* Boutons .btn compactés pour tenir dans la barre de navigation. */
+.nav .btn { padding: 10px 20px; font-size: 14px; }
+
 /* --- Footer --- */
 .footer {
     background: var(--purple-dark);

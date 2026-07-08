@@ -62,23 +62,28 @@ $notifCount = !empty($_SESSION['user_id'])
         <a href="#chiffres">Chiffres</a>
         <a href="#contact">Contact</a>
     </div>
-    <!-- Bascule de thème clair / sombre (icône mise à jour par le script du footer). -->
-    <button type="button" id="themeToggle" class="nav__theme"
-            aria-label="Basculer entre thème clair et sombre" title="Thème clair / sombre">
-        <span aria-hidden="true">&#127769;</span>
-    </button>
-    <?php if (!empty($_SESSION['user_id'])): ?>
-        <!-- Connecté : cloche de notifications avec pastille du nombre non lu. -->
-        <a href="<?= e(BASE_URL) ?>/notifications" class="nav__bell"
-           aria-label="Notifications<?= $notifCount > 0 ? ' : ' . (int) $notifCount . ' non lue' . ($notifCount > 1 ? 's' : '') : ' : aucune non lue' ?>">
-            <span aria-hidden="true">&#128276;</span>
-            <?php if ($notifCount > 0): ?>
-                <span class="nav__bell-badge"><?= $notifCount > 99 ? '99+' : (int) $notifCount ?></span>
-            <?php endif; ?>
-        </a>
-    <?php else: ?>
-        <a href="<?= e(BASE_URL) ?>/login" class="nav__cta">Connexion</a>
-        <a href="<?= e(BASE_URL) ?>/register" class="nav__cta nav__cta--ghost">S'inscrire</a>
-    <?php endif; ?>
+    <!-- Groupe d'actions : bascule de thème + accès selon l'état de connexion. -->
+    <div class="nav__actions">
+        <button type="button" id="themeToggle" class="nav__theme"
+                aria-label="Basculer entre thème clair et sombre" title="Thème clair / sombre">
+            <span aria-hidden="true">&#127769;</span>
+        </button>
+        <?php if (!empty($_SESSION['user_id'])): ?>
+            <!-- Connecté : cloche + nom + déconnexion (pas de Connexion/Inscription). -->
+            <a href="<?= e(BASE_URL) ?>/notifications" class="nav__bell"
+               aria-label="Notifications<?= $notifCount > 0 ? ' : ' . (int) $notifCount . ' non lue' . ($notifCount > 1 ? 's' : '') : ' : aucune non lue' ?>">
+                <span aria-hidden="true">&#128276;</span>
+                <?php if ($notifCount > 0): ?>
+                    <span class="nav__bell-badge"><?= $notifCount > 99 ? '99+' : (int) $notifCount ?></span>
+                <?php endif; ?>
+            </a>
+            <span class="nav__user"><?= e($_SESSION['name'] ?? '') ?></span>
+            <a href="<?= e(BASE_URL) ?>/logout" class="btn btn--ghost">Déconnexion</a>
+        <?php else: ?>
+            <!-- Déconnecté : Connexion (contour) + S'inscrire (plein, action mise en avant). -->
+            <a href="<?= e(BASE_URL) ?>/login" class="btn btn--ghost">Connexion</a>
+            <a href="<?= e(BASE_URL) ?>/register" class="btn btn--primary">S'inscrire</a>
+        <?php endif; ?>
+    </div>
     <button class="nav__burger" aria-label="Menu">&#9776;</button>
 </nav>
