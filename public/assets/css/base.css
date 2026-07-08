@@ -28,6 +28,8 @@
     --color-border:        rgba(20, 20, 43, .12);
     --nav-bg:              rgba(255, 255, 255, .82); /* barre de nav (verre) */
     --nav-border:          rgba(0, 0, 0, .06);       /* liseré bas de nav */
+    --tint-primary:        rgba(74, 63, 158, .12);   /* fond d'icône violet doux */
+    --tint-accent:         rgba(139, 198, 63, .18);  /* fond d'icône lime doux */
 
     /* --- Couleurs sémantiques --- */
     --color-success: #3B6D11;
@@ -82,6 +84,8 @@ html[data-theme="dark"] {
     --color-border:      rgba(255, 255, 255, .12);
     --nav-bg:            rgba(18, 16, 31, .82);
     --nav-border:        rgba(255, 255, 255, .10);
+    --tint-primary:      rgba(139, 127, 240, .20);
+    --tint-accent:       rgba(139, 198, 63, .22);
     --color-primary-light: #8b7ff0;
 
     /* Sémantiques éclaircies pour rester lisibles sur fond sombre. */
