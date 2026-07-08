@@ -45,6 +45,43 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </header>
 
+<!-- ============ ②a EXPERTISES — cartes 3D sur fond clair (transition courbée) ===== -->
+<section class="features">
+    <div class="features__grid">
+        <article class="card feature will-reveal">
+            <div class="feature__icon feature__icon--violet" aria-hidden="true">🎨</div>
+            <h3 class="feature__title">Création graphique</h3>
+            <p class="feature__desc">Logos, chartes et identités visuelles qui marquent les esprits.</p>
+        </article>
+        <article class="card feature will-reveal">
+            <div class="feature__icon feature__icon--lime" aria-hidden="true">🌐</div>
+            <h3 class="feature__title">Web &amp; Digital</h3>
+            <p class="feature__desc">Sites vitrines, e-commerce et présence en ligne sur mesure.</p>
+        </article>
+        <article class="card feature will-reveal">
+            <div class="feature__icon feature__icon--violet" aria-hidden="true">🎬</div>
+            <h3 class="feature__title">Audiovisuel</h3>
+            <p class="feature__desc">Shooting photo, vidéo et drone pour valoriser vos projets.</p>
+        </article>
+    </div>
+</section>
+
+<!-- Effet souris du héros : met à jour --mx/--my (halo qui suit le curseur).
+     Désactivé si l'utilisateur préfère moins d'animations. Vanilla JS, léger. -->
+<script>
+(function () {
+    var hero = document.getElementById('accueil');
+    if (!hero) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+    hero.addEventListener('mousemove', function (e) {
+        var r = hero.getBoundingClientRect();
+        hero.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+        hero.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+})();
+</script>
+
 <!-- ============ ②b TRUST BAR — clients réels (factures 14-16) ===== -->
 <section class="trust">
     <p class="trust__label">Ils nous font confiance</p>
