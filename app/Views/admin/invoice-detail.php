@@ -48,11 +48,22 @@ $tva = (float) $invoice['amount_ttc'] - (float) $invoice['amount_ht']; // montan
     .badge--unpaid  { background: #fdecec; color: #b3261e; }
     .badge--partial { background: #fff7e6; color: #b8860b; }
     .badge--paid    { background: #eef7e0; color: #3B6D11; }
+    .fac__bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+        gap: 12px; margin: 0 0 20px; }
+    .fac__print { display: inline-block; background: var(--violet); color: #fff; text-decoration: none;
+        font-weight: 600; font-size: 14px; padding: 10px 20px; border-radius: 999px; transition: background .2s; }
+    .fac__print:hover { background: var(--lime); }
 </style>
 
 <main class="fac">
     <div class="fac__wrap">
-        <a class="fac__back" href="<?= e(BASE_URL) ?>/admin/factures">← Retour aux factures</a>
+        <div class="fac__bar">
+            <a class="fac__back" href="<?= e(BASE_URL) ?>/admin/factures">← Retour aux factures</a>
+            <a class="fac__print"
+               href="<?= e(BASE_URL) ?>/admin/factures/<?= e(rawurlencode($invoice['code'])) ?>/imprimer">
+                Télécharger / Imprimer
+            </a>
+        </div>
 
         <article class="doc">
             <div class="doc__head">

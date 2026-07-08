@@ -41,6 +41,8 @@ Seules pages HTTP existantes aujourd'hui :
 | `/admin/factures` | GET | Facturation : commandes terminées à facturer + factures émises. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
 | `/admin/factures/generer` | POST | `csrf` + `order_id` → crée `FAC-AAAA-NNNN` (HT = budget, TVA 19 %, TTC) si la commande est `completed` et pas déjà facturée. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
 | `/admin/factures/{numero}` | GET | Détail d'une facture (société + client + commande + montants). Numéro extrait du chemin. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
+| `/admin/factures/{numero}/imprimer` | GET | Facture imprimable A4 (page autonome, `window.print()` → PDF navigateur, aucune librairie). Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
+| `/client/facture/{numero}/imprimer` | GET | Même vue imprimable, **uniquement** si la facture appartient au client (propriété via commande) ; sinon 404. Garde `require_role('client')` | ✅ Depuis le 08/07/2026 |
 | `/notifications` | GET | Notifications de l'utilisateur (cloche + liste). Ouvrir la page marque tout comme lu. Garde `require_login` (tous rôles connectés) — sinon → `/login` | ✅ Depuis le 08/07/2026 |
 | toute autre URL | * | Réécrite vers `index.php?url=...` → **page 404 propre** (`app/Views/errors/404.php`, code HTTP 404) | ✅ Depuis le 05/07/2026 |
 

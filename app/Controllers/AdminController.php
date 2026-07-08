@@ -176,6 +176,19 @@ class AdminController
         require ROOT_PATH . '/app/Views/admin/invoice-detail.php';
     }
 
+    /** Version imprimable / PDF d'une facture (impression navigateur). */
+    public function printInvoice(string $number): void
+    {
+        require_role('admin');
+        $invoice = $this->invoiceM()->findByNumber($number);
+        if ($invoice === null) {
+            http_response_code(404);
+            require ROOT_PATH . '/app/Views/errors/404.php';
+            return;
+        }
+        require ROOT_PATH . '/app/Views/admin/invoice-print.php';
+    }
+
     /** Gestion de l'équipe : formulaire de création + liste des employés. */
     public function employees(): void
     {
