@@ -132,11 +132,14 @@ if (!reduceMotion) {
         });
     }
 
-    /* Entrée des lignes de services au scroll (décalées) */
-    gsap.from('.service', {
-        opacity: 0, y: 40, duration: .8, stagger: .1, ease: 'power3.out',
-        scrollTrigger: { trigger: '.services__list', start: 'top 80%' }
-    });
+    /* Entrée des lignes de services au scroll (uniquement si l'ancienne
+       liste existe encore — la home premium utilise désormais .reveal). */
+    if (document.querySelector('.service')) {
+        gsap.from('.service', {
+            opacity: 0, y: 40, duration: .8, stagger: .1, ease: 'power3.out',
+            scrollTrigger: { trigger: '.services__list', start: 'top 80%' }
+        });
+    }
 
     /* ================================================================
        ④ WE BELIEVE — les phrases se révèlent en scrollant
@@ -226,3 +229,48 @@ if (burger) burger.addEventListener('click', () => {
         borderRadius: '14px', boxShadow: '0 14px 44px rgba(0,0,0,.12)'
     });
 });
+
+/* ================================================================
+   ⑩ Révélation au scroll + compteurs (vanilla, IntersectionObserver)
+   .reveal = sections premium qui apparaissent ; .count = chiffres qui
+   comptent (data-to + data-suffix). Respecte prefers-reduced-motion.
+   ================================================================ */
+(function () {
+    const reveals  = document.querySelectorAll('.reveal');
+    const counters = document.querySelectorAll('.count');
+
+    /* Affiche directement la valeur finale (mouvement réduit / repli). */
+    const remplir = (el) =>
+        el.textContent = (parseInt(el.dataset.to, 10) || 0) + (el.dataset.suffix || '');
+
+    /* Comptage animé 0 → valeur cible. */
+    function compter(el) {
+        const cible = parseInt(el.dataset.to, 10) || 0;
+        const suffixe = el.dataset.suffix || '';
+        const duree = 1400, debut = performance.now();
+        (function frame(t) {
+            const p = Math.min((t - debut) / duree, 1);
+            el.textContent = Math.round(p * cible) + suffixe;
+            if (p < 1) requestAnimationFrame(frame);
+        })(debut);
+    }
+
+    /* Mouvement réduit ou pas d'IntersectionObserver → tout visible d'emblée. */
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+        reveals.forEach((el) => el.classList.add('is-visible'));
+        counters.forEach(remplir);
+        return;
+    }
+
+    const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach((en) => {
+            if (!en.isIntersecting) return;
+            en.target.classList.add('is-visible');
+            if (en.target.classList.contains('count')) compter(en.target);
+            obs.unobserve(en.target);
+        });
+    }, { threshold: 0.2 });
+
+    reveals.forEach((el) => io.observe(el));
+    counters.forEach((el) => io.observe(el));
+})();

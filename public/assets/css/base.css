@@ -202,3 +202,12 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--space-4);
 }
+
+/* Révélation au scroll (pilotée par IntersectionObserver dans animations.js).
+   Sans JS : visible. Avec JS : masqué jusqu'à l'ajout de .is-visible. */
+.reveal { transition: opacity .7s ease, transform .7s ease; }
+html.js .reveal { opacity: 0; transform: translateY(24px); }
+html.js .reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    html.js .reveal { opacity: 1; transform: none; transition: none; }
+}
