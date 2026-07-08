@@ -72,7 +72,18 @@ class AdminController
             $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
             redirect('/admin/commandes');
         }
-        $ok = $this->orderM()->updateStatus((int) ($_POST['order_id'] ?? 0), 'approved');
+        $orderId = (int) ($_POST['order_id'] ?? 0);
+        $ok = $this->orderM()->updateStatus($orderId, 'approved');
+        if ($ok) {
+            // Notifier le client que sa demande est acceptée.
+            $notif = new Notification();
+            $info  = $notif->orderInfo($orderId);
+            if ($info) {
+                $notif->create((int) $info['client_user_id'],
+                    "Votre demande {$info['code']} a été acceptée",
+                    '/client/commande/' . rawurlencode($info['code']));
+            }
+        }
         $_SESSION['flash'] = $ok ? 'Commande approuvée.' : 'Action impossible sur cette commande.';
         redirect('/admin/commandes');
     }
@@ -110,6 +121,15 @@ class AdminController
         }
 
         $this->orderM()->assignEmployee($orderId, $employeeId);
+
+        // Notifier l'employé de sa nouvelle tâche.
+        $notif  = new Notification();
+        $info   = $notif->orderInfo($orderId);
+        $empUid = $notif->employeeUserId($employeeId);
+        if ($info && $empUid) {
+            $notif->create($empUid, "Nouvelle tâche assignée : {$info['code']}", '/employe/taches');
+        }
+
         $_SESSION['flash'] = 'Commande affectée à l\'employé.';
         redirect('/admin/commandes');
     }

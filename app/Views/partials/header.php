@@ -1,4 +1,10 @@
-<?php /** app/Views/partials/header.php — haut de page commun : head (meta, polices, CSS), intro flash, navigation. */ ?><!DOCTYPE html>
+<?php
+/** app/Views/partials/header.php — haut de page commun : head (meta, polices, CSS), intro flash, navigation. */
+// Pastille de notifications : nombre de non lues (uniquement si connecté).
+$notifCount = !empty($_SESSION['user_id'])
+    ? (new Notification())->unreadCount((int) $_SESSION['user_id'])
+    : 0;
+?><!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -16,6 +22,18 @@
     <link rel="stylesheet" href="assets/css/layout.css">
     <link rel="stylesheet" href="assets/css/sections.css">
     <link rel="stylesheet" href="assets/css/motion.css">
+
+    <style>
+        /* Cloche de notifications (auto-portée, couleurs de marque). */
+        .nav__bell { position: relative; display: inline-flex; align-items: center; justify-content: center;
+            width: 42px; height: 42px; border-radius: 999px; text-decoration: none; font-size: 20px;
+            background: #f2f0fb; }
+        .nav__bell:hover { background: #e7e2f7; }
+        .nav__bell-badge { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px;
+            box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #8BC63F;
+            color: #1f3d07; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+            font-family: 'Inter', system-ui, sans-serif; }
+    </style>
 </head>
 <body>
 
@@ -34,7 +52,18 @@
         <a href="#chiffres">Chiffres</a>
         <a href="#contact">Contact</a>
     </div>
-    <a href="<?= e(BASE_URL) ?>/login" class="nav__cta">Connexion</a>
-    <a href="<?= e(BASE_URL) ?>/register" class="nav__cta nav__cta--ghost">S'inscrire</a>
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <!-- Connecté : cloche de notifications avec pastille du nombre non lu. -->
+        <a href="<?= e(BASE_URL) ?>/notifications" class="nav__bell"
+           aria-label="Notifications<?= $notifCount > 0 ? ' : ' . (int) $notifCount . ' non lue' . ($notifCount > 1 ? 's' : '') : ' : aucune non lue' ?>">
+            <span aria-hidden="true">&#128276;</span>
+            <?php if ($notifCount > 0): ?>
+                <span class="nav__bell-badge"><?= $notifCount > 99 ? '99+' : (int) $notifCount ?></span>
+            <?php endif; ?>
+        </a>
+    <?php else: ?>
+        <a href="<?= e(BASE_URL) ?>/login" class="nav__cta">Connexion</a>
+        <a href="<?= e(BASE_URL) ?>/register" class="nav__cta nav__cta--ghost">S'inscrire</a>
+    <?php endif; ?>
     <button class="nav__burger" aria-label="Menu">&#9776;</button>
 </nav>
