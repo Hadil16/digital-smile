@@ -38,6 +38,10 @@ class AdminController
         $totalClients   = $this->clientM()->countTotal();
         $totalEmployees = $this->employeeM()->countTotal();
 
+        // Séries pour les graphiques (converties en JSON dans la vue).
+        $monthly     = $this->orderM()->monthlyCounts(6); // courbe : commandes/mois
+        $topServices = $this->orderM()->topServices(5);   // barres : services les plus demandés
+
         require ROOT_PATH . '/app/Views/admin/dashboard.php';
     }
 
