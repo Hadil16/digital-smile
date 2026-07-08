@@ -1,16 +1,68 @@
 /* =====================================================================
-   base.css — Fondations : variables, reset, typo, boutons
+   base.css — Fondations : design tokens, reset, typo, boutons, utilitaires
    Charte Digital Smile : blanc, violet #4A3F9E, vert lime #8BC63F
+   ---------------------------------------------------------------------
+   SYSTÈME DE THÈME
+   - :root  = mode CLAIR (défaut). Tous les tokens de marque y sont définis.
+   - html[data-theme="dark"] = mode SOMBRE : seuls les tokens de SURFACE /
+     TEXTE / BORDURE basculent ; les accents violet/lime, ombres, rayons et
+     espacements restent identiques.
+   - Les anciens tokens (--purple, --green, --gray-light…) sont conservés en
+     ALIAS des nouveaux → aucune régression visuelle en mode clair.
    ===================================================================== */
 
 :root {
-    --purple:      #4A3F9E;
-    --purple-dark: #26215C;
-    --green:       #8BC63F;
-    --green-dark:  #6BA02C;
+    /* --- Marque (identité, fixes dans les deux thèmes) --- */
+    --color-primary:       #4A3F9E;   /* violet */
+    --color-primary-dark:  #26215C;
+    --color-primary-light: #6b5fd4;
+    --color-accent:        #8BC63F;   /* vert lime */
+    --color-accent-dark:   #6BA02C;
+
+    /* --- Rôles surface / texte (BASCULENT en mode sombre) --- */
+    --color-bg:            #ffffff;   /* fond de page */
+    --color-surface:       #ffffff;   /* cartes, panneaux */
+    --color-surface-alt:   #f5f5f7;   /* sections grisées */
+    --color-text:          #14142b;   /* texte principal */
+    --color-muted:         #6b6b7b;   /* texte secondaire */
+    --color-border:        rgba(20, 20, 43, .12);
+    --nav-bg:              rgba(255, 255, 255, .82); /* barre de nav (verre) */
+    --nav-border:          rgba(0, 0, 0, .06);       /* liseré bas de nav */
+
+    /* --- Couleurs sémantiques --- */
+    --color-success: #3B6D11;
+    --color-warning: #b8860b;
+    --color-danger:  #b3261e;
+    --color-info:    #1e6fd9;
+
+    /* --- Ombres douces --- */
+    --shadow-sm: 0 6px 20px rgba(20, 20, 43, .06);
+    --shadow-md: 0 12px 40px rgba(20, 20, 43, .10);
+    --shadow-lg: 0 30px 80px rgba(20, 20, 43, .18);
+
+    /* --- Rayons --- */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --radius-full: 999px;
+
+    /* --- Espacements (échelle) --- */
+    --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+    --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+    /* --- Transition standard --- */
+    --transition: 180ms ease;
+
+    /* --- Anciens tokens conservés en ALIAS (compatibilité, zéro régression) --- */
+    --purple:      var(--color-primary);
+    --purple-dark: var(--color-primary-dark);
+    --green:       var(--color-accent);
+    --green-dark:  var(--color-accent-dark);
+    --gray:        var(--color-muted);
+    --gray-light:  var(--color-surface-alt);
+    /* --white / --black restent des valeurs FIXES : ils servent aussi de
+       texte clair sur boutons et de blocs sombres (ne doivent pas basculer). */
     --black:       #14142b;
-    --gray:        #6b6b7b;
-    --gray-light:  #f5f5f7;
     --white:       #ffffff;
 
     --font-display: 'Poppins', system-ui, sans-serif;
@@ -20,15 +72,36 @@
     --pad:  clamp(20px, 5vw, 60px);   /* marge latérale fluide */
 }
 
+/* --- Mode SOMBRE : on ne redéfinit que surfaces / texte / bordures --- */
+html[data-theme="dark"] {
+    --color-bg:          #12101f;
+    --color-surface:     #1b1830;
+    --color-surface-alt: #211d38;
+    --color-text:        #ece9f6;
+    --color-muted:       #a5a1bd;
+    --color-border:      rgba(255, 255, 255, .12);
+    --nav-bg:            rgba(18, 16, 31, .82);
+    --nav-border:        rgba(255, 255, 255, .10);
+    --color-primary-light: #8b7ff0;
+
+    /* Sémantiques éclaircies pour rester lisibles sur fond sombre. */
+    --color-success: #8BC63F;
+    --color-warning: #e0a92e;
+    --color-danger:  #e5726b;
+    --color-info:    #6ba8f0;
+}
+
 /* --- Reset minimal --- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
     font-family: var(--font-body);
-    color: var(--black);
-    background: var(--white);
+    color: var(--color-text);
+    background: var(--color-bg);
     line-height: 1.6;
     overflow-x: hidden;
+    /* Bascule de thème fluide. */
+    transition: background var(--transition), color var(--transition);
 }
 img, video { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
@@ -40,11 +113,11 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
     font-family: var(--font-display);
     font-size: clamp(15px, 1.6vw, 20px);
     font-weight: 600;
-    color: var(--black);
+    color: var(--color-text);
     padding: 0 var(--pad);
     margin-bottom: clamp(30px, 5vw, 60px);
 }
-.sec-title::after { content: " —"; color: var(--green); }
+.sec-title::after { content: " —"; color: var(--color-accent); }
 
 /* --- Boutons --- */
 .btn {
@@ -52,7 +125,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
     align-items: center;
     justify-content: center;
     padding: 16px 34px;
-    border-radius: 100px;
+    border-radius: var(--radius-full);
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 15px;
@@ -60,10 +133,13 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
     overflow: hidden;
     position: relative;
 }
-.btn--primary { background: var(--green); color: var(--purple-dark); }
-.btn--primary:hover { box-shadow: 0 12px 34px rgba(139,198,63,.45); }
+.btn--primary { background: var(--color-accent); color: var(--color-primary-dark); }
+.btn--primary:hover { box-shadow: 0 12px 34px rgba(139, 198, 63, .45); }
 .btn--dark { background: var(--black); color: var(--white); }
-.btn--dark:hover { background: var(--purple); }
+.btn--dark:hover { background: var(--color-primary); }
+/* Variante "fantôme" du design system (contour, pour dashboards). */
+.btn--ghost { background: transparent; color: var(--color-primary); border: 1px solid var(--color-border); }
+.btn--ghost:hover { border-color: var(--color-primary); }
 
 /* Bouton "Explore Explore…" : texte répété défilant au survol */
 .btn--marquee .btn__track {
@@ -76,4 +152,48 @@ button { font: inherit; cursor: pointer; border: none; background: none; }
 }
 @keyframes btn-scroll {
     to { transform: translateX(-50%); }
+}
+
+/* =====================================================================
+   UTILITAIRES DU DESIGN SYSTEM (prêts pour les dashboards)
+   N'utilisent QUE des tokens → thème clair/sombre automatique.
+   ===================================================================== */
+
+/* Carte : surface + rayon + ombre douce ; léger relief 3D au survol. */
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-5);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+.card:hover {
+    transform: translateY(-6px) perspective(600px) rotateX(2deg);
+    box-shadow: var(--shadow-md);
+}
+
+/* Badge + modificateurs de statut (contour coloré, lisible dans les 2 thèmes). */
+.badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+.badge--success { color: var(--color-success); border-color: var(--color-success); }
+.badge--warning { color: var(--color-warning); border-color: var(--color-warning); }
+.badge--danger  { color: var(--color-danger);  border-color: var(--color-danger); }
+.badge--info    { color: var(--color-info);    border-color: var(--color-info); }
+
+/* Empilement vertical régulier. */
+.stack { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* Grille responsive auto-remplie. */
+.grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
 }
