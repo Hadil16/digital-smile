@@ -149,6 +149,66 @@ class Order extends Model
     }
 
     /**
+     * Nombre de commandes par mois sur les N derniers mois (pour un graphique
+     * en courbe). Renvoie ['labels' => [...], 'values' => [...]] alignés, avec
+     * 0 pour un mois sans commande. Les mois vides restent visibles.
+     */
+    public function monthlyCounts(int $months = 6): array
+    {
+        $months = max(1, min(24, $months)); // borne raisonnable
+        $fr = ['', 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+               'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+
+        // Liste des N derniers mois, du plus ancien au plus récent.
+        $labels = [];
+        $keys   = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $ts       = strtotime("first day of -$i month");
+            $keys[]   = date('Y-m', $ts);
+            $labels[] = $fr[(int) date('n', $ts)] . ' ' . date('Y', $ts);
+        }
+
+        // Comptage groupé par mois sur la période.
+        $since = date('Y-m-01', strtotime('first day of -' . ($months - 1) . ' month'));
+        $stmt  = $this->db->prepare(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, COUNT(*) AS n
+             FROM orders WHERE created_at >= :since GROUP BY ym"
+        );
+        $stmt->execute([':since' => $since]);
+        $map = [];
+        foreach ($stmt->fetchAll() as $r) {
+            $map[$r['ym']] = (int) $r['n'];
+        }
+
+        $values = array_map(fn($k) => $map[$k] ?? 0, $keys);
+        return ['labels' => $labels, 'values' => $values];
+    }
+
+    /**
+     * Services les plus demandés (nom + nombre de commandes), pour un
+     * graphique en barres. Renvoie ['labels' => [...], 'values' => [...]].
+     */
+    public function topServices(int $limit = 5): array
+    {
+        $limit = max(1, min(20, $limit));
+        $stmt = $this->db->prepare(
+            "SELECT s.name AS service_name, COUNT(*) AS n
+             FROM orders o
+             JOIN services s ON s.id = o.service_id
+             GROUP BY s.id, s.name
+             ORDER BY n DESC, s.name ASC
+             LIMIT :lim"
+        );
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+        return [
+            'labels' => array_column($rows, 'service_name'),
+            'values' => array_map('intval', array_column($rows, 'n')),
+        ];
+    }
+
+    /**
      * Change le statut d'une commande. Liste blanche STRICTE : seuls
      * 'approved', 'rejected', 'in_progress' sont acceptés depuis l'admin.
      * Renvoie true si une ligne a bien été modifiée.

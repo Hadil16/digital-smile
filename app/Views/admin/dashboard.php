@@ -2,15 +2,15 @@
 /**
  * app/Views/admin/dashboard.php
  * -----------------------------------------------------------------
- * Tableau de bord administrateur : cartes de statistiques (chiffres
- * en direct) + accès à la gestion des demandes et de l'équipe.
- * Variables : $statusCounts, $totalOrders, $totalClients, $totalEmployees.
+ * Tableau de bord administrateur : cartes de statistiques + 3 graphiques
+ * interactifs (Chart.js) + accès à la gestion.
+ * Variables : $statusCounts, $totalOrders, $totalClients, $totalEmployees,
+ *             $monthly, $topServices.
  * -----------------------------------------------------------------
  */
 require ROOT_PATH . '/app/Views/partials/header.php';
 
-// Cartes de statistiques (icône, libellé FR, valeur). Définies une fois
-// pour éviter de répéter le même bloc HTML huit fois.
+// Cartes de statistiques (icône, libellé FR, valeur). Définies une fois.
 $stats = [
     ['icon' => '📋', 'label' => 'Total demandes', 'value' => (int) ($totalOrders ?? 0)],
     ['icon' => '⏳', 'label' => 'En attente',      'value' => (int) ($statusCounts['pending'] ?? 0)],
@@ -21,6 +21,28 @@ $stats = [
     ['icon' => '👥', 'label' => 'Clients',          'value' => (int) ($totalClients ?? 0)],
     ['icon' => '🧑‍💼', 'label' => 'Employés',       'value' => (int) ($totalEmployees ?? 0)],
 ];
+
+// Données des graphiques (converties en JSON plus bas, lues par le script du footer).
+$statusFrLabels = ['En attente', 'Acceptée', 'En cours', 'Livrée', 'Terminée', 'Refusée'];
+$statusValues   = [
+    (int) ($statusCounts['pending'] ?? 0),   (int) ($statusCounts['approved'] ?? 0),
+    (int) ($statusCounts['in_progress'] ?? 0), (int) ($statusCounts['delivered'] ?? 0),
+    (int) ($statusCounts['completed'] ?? 0), (int) ($statusCounts['rejected'] ?? 0),
+];
+$monthly     = $monthly     ?? ['labels' => [], 'values' => []];
+$topServices = $topServices ?? ['labels' => [], 'values' => []];
+
+$chartData = [
+    'monthly'  => $monthly,
+    'status'   => ['labels' => $statusFrLabels, 'values' => $statusValues],
+    'services' => $topServices,
+];
+
+// Résumés textuels (accessibilité : lus par les lecteurs d'écran).
+$pair = fn(array $l, array $v) => $l ? implode(', ', array_map(fn($a, $b) => "$a : $b", $l, $v)) : 'aucune donnée';
+$sumMonthly  = $pair($monthly['labels'], $monthly['values']);
+$sumStatus   = $pair($statusFrLabels, $statusValues);
+$sumServices = $pair($topServices['labels'], $topServices['values']);
 ?>
 <style>
     /* Styles auto-portés du tableau de bord (couleurs de marque). */
@@ -36,7 +58,7 @@ $stats = [
     .dash__note { color: #666; font-size: 15px; margin: 0; }
 
     /* Grille responsive de cartes chiffrées */
-    .stats { list-style: none; padding: 0; margin: 0 0 34px;
+    .stats { list-style: none; padding: 0; margin: 0 0 24px;
         display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
     .stat { background: #fff; border: 1px solid #eee; border-top: 3px solid var(--lime);
         border-radius: 16px; padding: 22px 18px; text-align: center;
@@ -46,6 +68,15 @@ $stats = [
         font-size: 34px; line-height: 1; color: var(--violet); }
     .stat__label { display: block; color: #666; font-size: 13px; font-weight: 600; margin: 8px 0 0; }
 
+    /* Grille responsive de graphiques (même style de carte que les KPI) */
+    .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px; margin: 0 0 34px; }
+    .chart-card { background: #fff; border: 1px solid #eee; border-top: 3px solid var(--violet);
+        border-radius: 16px; padding: 20px; box-shadow: 0 12px 40px rgba(74, 63, 158, .06); }
+    .chart-card__title { font-family: 'Poppins', system-ui, sans-serif; font-size: 16px;
+        color: #222; margin: 0 0 14px; }
+    .chart-card__canvas { position: relative; height: 260px; }
+
     /* Boutons d'accès (inchangés) */
     .dash__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
     .dash__btn { display: inline-block; background: var(--violet); color: #fff;
@@ -54,6 +85,10 @@ $stats = [
     .dash__btn:hover { background: var(--lime); }
     .dash__btn--ghost { background: transparent; color: #444; border: 1px solid #d5d5db; }
     .dash__btn--ghost:hover { background: transparent; border-color: var(--violet); color: var(--violet); }
+
+    /* Texte réservé aux lecteurs d'écran (accessibilité) */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 </style>
 
 <main class="dash">
@@ -73,6 +108,41 @@ $stats = [
                 </li>
             <?php endforeach; ?>
         </ul>
+
+        <!-- ============ Graphiques interactifs (Chart.js) ============ -->
+        <section id="charts" class="charts" aria-label="Graphiques de l'activité">
+            <div class="chart-card">
+                <h2 class="chart-card__title">Commandes par mois</h2>
+                <div class="chart-card__canvas">
+                    <canvas id="chartMonthly" role="img"
+                            aria-label="Commandes par mois — <?= e($sumMonthly) ?>"><?= e($sumMonthly) ?></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2 class="chart-card__title">Répartition par statut</h2>
+                <div class="chart-card__canvas">
+                    <canvas id="chartStatus" role="img"
+                            aria-label="Répartition par statut — <?= e($sumStatus) ?>"><?= e($sumStatus) ?></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2 class="chart-card__title">Top 5 services</h2>
+                <div class="chart-card__canvas">
+                    <canvas id="chartServices" role="img"
+                            aria-label="Top 5 des services — <?= e($sumServices) ?>"><?= e($sumServices) ?></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Données PHP -> JS (uniquement des données, aucune logique). -->
+        <script>
+            window.DS_CHARTS = <?= json_encode(
+                $chartData,
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
+            ) ?>;
+        </script>
 
         <div class="dash__actions">
             <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/commandes">Gérer les demandes</a>
