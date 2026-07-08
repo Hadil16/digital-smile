@@ -366,12 +366,132 @@
 .quote__author { color: var(--gray); font-size: 15px; }
 .quote__author em { opacity: .6; }
 
-/* ============ Responsive ============ */
+/* ============ Responsive (anciennes sections, conservées) ============ */
 @media (max-width: 860px) {
-    .works__grid { grid-template-columns: 1fr; }
-    .process__grid { grid-template-columns: 1fr 1fr; gap: 34px; }
-    .services__reveal { display: none; }       /* pas de survol sur mobile */
-    .service { flex-direction: column; align-items: flex-start; gap: 6px; }
     .stats__grid { grid-template-columns: 1fr; }
     .hero__ghost { display: none; }
+}
+
+/* =====================================================================
+   DESIGN-3B — sections premium après le panneau chiffres.
+   Rythme : accents sombres (fixes 2 thèmes) + respirations tokenisées.
+   ===================================================================== */
+
+/* ⑦ MARQUEE — bandeau défilant plein écran (respiration tokenisée) */
+.strip {
+    overflow: hidden; margin: 24px 0; padding: 22px 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+.strip__track {
+    display: inline-flex; gap: 40px; white-space: nowrap;
+    font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: 26px;
+    color: var(--color-text);
+    animation: strip-scroll 26s linear infinite;
+}
+.strip:hover .strip__track { animation-play-state: paused; }
+.strip__dot { color: #8BC63F; }
+@keyframes strip-scroll { to { transform: translateX(-50%); } }
+
+/* ⑧ RÉALISATIONS — panneau sombre + cartes portfolio (tilt 3D) */
+.portfolio {
+    margin: 16px; border-radius: 28px; background: #17142e; color: #fff;
+    padding: clamp(44px, 6vw, 84px) clamp(24px, 4vw, 56px);
+}
+.portfolio__head {
+    display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    max-width: var(--maxw); margin: 0 auto clamp(28px, 4vw, 44px);
+}
+.portfolio__title { font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 40px); color: #fff; }
+.portfolio__all { font-family: 'Poppins', var(--font-display); font-weight: 600; color: #8BC63F; }
+.portfolio__grid { max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.pf {
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 20px; overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.pf:hover { border-color: rgba(139, 198, 63, .5); }
+.pf__media { height: 210px; background: linear-gradient(135deg, #4A3F9E, #8BC63F); }
+.pf__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf__body { padding: 20px 22px; }
+.pf__cat {
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 12px;
+    letter-spacing: .12em; text-transform: uppercase; color: #8BC63F; margin-bottom: 6px;
+}
+.pf__title { font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 17px; color: #fff; line-height: 1.3; }
+
+/* ⑨ PROCESS — panneau dégradé sombre, 3 étapes */
+.how { padding: clamp(20px, 4vw, 40px) 16px; }
+.how__panel {
+    max-width: var(--maxw); margin: 0 auto; border-radius: 34px; color: #fff;
+    background: linear-gradient(135deg, #4A3F9E, #332a72);
+    padding: clamp(44px, 6vw, 64px) clamp(28px, 5vw, 56px);
+}
+.how__label {
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 13px;
+    letter-spacing: .2em; text-transform: uppercase; color: #8BC63F; margin-bottom: 28px;
+}
+.how__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.how__num { font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: 44px; color: #8BC63F; line-height: 1; margin-bottom: 12px; }
+.how__title { font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 21px; margin-bottom: 10px; }
+.how__desc { font-family: 'Poppins', var(--font-display); font-size: 15px; color: rgba(255, 255, 255, .72); line-height: 1.6; }
+
+/* ⑩ CROYANCE — déclaration centrée (tokenisée, respiration) */
+.belief { text-align: center; padding: clamp(80px, 12vw, 120px) var(--pad); }
+.belief__label {
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 13px;
+    letter-spacing: .2em; text-transform: uppercase; color: #8BC63F; margin-bottom: 24px;
+}
+.belief__line {
+    max-width: 900px; margin: 0 auto;
+    font-family: 'Baloo 2', var(--font-display); font-weight: 800;
+    font-size: clamp(36px, 6vw, 62px); line-height: 1.1; color: var(--color-text);
+}
+.belief__accent { color: #8BC63F; }
+
+/* ⑪ CONTACT — Discutons (contour) + carte de contact (verre) */
+.contact {
+    margin: 16px; border-radius: 28px; background: #14122b; color: #fff;
+    padding: clamp(48px, 7vw, 90px) clamp(24px, 4vw, 56px);
+}
+.contact__grid {
+    max-width: var(--maxw); margin: 0 auto; align-items: center;
+    display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(32px, 5vw, 64px);
+}
+.contact__status {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 12px;
+    letter-spacing: .18em; text-transform: uppercase; color: rgba(255, 255, 255, .75); margin-bottom: 20px;
+}
+.contact__dot { width: 10px; height: 10px; border-radius: 50%; background: #8BC63F; animation: pulse-dot 1.8s ease-in-out infinite; }
+@keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 0 rgba(139, 198, 63, .5); } 50% { box-shadow: 0 0 0 9px rgba(139, 198, 63, 0); } }
+.contact__title {
+    font-family: 'Baloo 2', var(--font-display); font-weight: 800; line-height: .9;
+    font-size: clamp(64px, 12vw, 138px); color: transparent;
+    -webkit-text-stroke: 2px rgba(255, 255, 255, .85);
+}
+.contact__accent { color: #8BC63F; -webkit-text-stroke: 0; }
+.contact__sub { font-family: 'Poppins', var(--font-display); font-size: 17px; color: rgba(255, 255, 255, .75); max-width: 440px; margin-top: 22px; }
+.contact__card {
+    background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 22px; padding: 34px; transform-style: preserve-3d; transition: transform .18s ease;
+}
+.contact__card-title { font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 22px; margin-bottom: 20px; }
+.contact__mail {
+    display: block; font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 18px;
+    color: #8BC63F; margin-bottom: 24px; word-break: break-all;
+}
+.contact__btn { width: 100%; justify-content: center; }
+
+@media (max-width: 860px) {
+    .portfolio__grid { grid-template-columns: 1fr; }
+    .how__grid { grid-template-columns: 1fr; }
+    .contact__grid { grid-template-columns: 1fr; }
+}
+/* Accessibilité : coupe les animations décoratives si mouvement réduit. */
+@media (prefers-reduced-motion: reduce) {
+    .strip__track { animation: none; }
+    .contact__dot { animation: none; }
 }

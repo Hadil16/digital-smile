@@ -1,5 +1,5 @@
 <?php
-/** app/Views/public/home.php — vue de l'accueil : sections centrales uniquement (héros → CTA). */
+/** app/Views/public/home.php — accueil premium : héros → services → chiffres → réalisations → process → croyance → contact. */
 require __DIR__ . '/../partials/header.php';
 ?>
 
@@ -27,8 +27,7 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </header>
 
-<!-- Effet souris du héros : met à jour --mx/--my (halo qui suit le curseur).
-     Désactivé si l'utilisateur préfère moins d'animations. Vanilla JS, léger. -->
+<!-- Effet souris du héros : met à jour --mx/--my (halo qui suit le curseur). Vanilla JS. -->
 <script>
 (function () {
     var hero = document.getElementById('accueil');
@@ -42,36 +41,6 @@ require __DIR__ . '/../partials/header.php';
     });
 })();
 </script>
-
-<!-- ============ ②b TRUST BAR — clients réels (factures 14-16) ===== -->
-<section class="trust">
-    <p class="trust__label">Ils nous font confiance</p>
-    <ul class="trust__list">
-        <li>SONATRACH</li>
-        <li>GRANITEX</li>
-        <li>BONAPRO</li>
-        <li>EPTP ALGER</li>
-        <li>ARIZONA</li>
-        <li>RAHA DZ</li>
-    </ul>
-</section>
-
-<!-- ============ ③ MARQUEE défilant ============ -->
-<div class="marquee" aria-hidden="true">
-    <div class="marquee__track">
-        <!-- Contenu dupliqué : nécessaire pour une boucle sans couture -->
-        <span>BRANDING</span><span class="dot">•</span>
-        <span>IMPRESSION</span><span class="dot">•</span>
-        <span>WEB</span><span class="dot">•</span>
-        <span>QR CODES</span><span class="dot">•</span>
-        <span>AUDIOVISUEL</span><span class="dot">•</span>
-        <span>BRANDING</span><span class="dot">•</span>
-        <span>IMPRESSION</span><span class="dot">•</span>
-        <span>WEB</span><span class="dot">•</span>
-        <span>QR CODES</span><span class="dot">•</span>
-        <span>AUDIOVISUEL</span><span class="dot">•</span>
-    </div>
-</div>
 
 <!-- ============ ④ SERVICES — grille de cartes premium ============ -->
 <section class="services" id="services">
@@ -98,96 +67,6 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<!-- ============ ④b RÉALISATIONS — projets RÉELS (factures 14-16) ⭐
-     NOTE : les visuels sont des illustrations à remplacer par les
-     photos réelles de chaque projet (dossiers Drive : Affiches,
-     Packaging, Habillage, Logos, Qr Codes...). Les projets et
-     clients, eux, sont authentiques. ============ -->
-<section class="works" id="realisations">
-    <h2 class="sec-title">Réalisations</h2>
-
-    <div class="works__grid">
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/branding.jpg" alt="Charte graphique Bonapro"></div>
-            <p class="work__cat">Identité visuelle</p>
-            <h3 class="work__title">Charte graphique — Eurl Bonapro</h3>
-        </article>
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/print.jpg" alt="Impression grand format Sonatrach"></div>
-            <p class="work__cat">Impression grand format</p>
-            <h3 class="work__title">Bâches &amp; signalétique — Sonatrach</h3>
-        </article>
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/qrcode.jpg" alt="QR Code dynamique Granitex"></div>
-            <p class="work__cat">QR Codes</p>
-            <h3 class="work__title">QR Code dynamique — Coop Granitex</h3>
-        </article>
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/web.jpg" alt="Site web twinshamis.com"></div>
-            <p class="work__cat">Web</p>
-            <h3 class="work__title">Site vitrine — twinshamis.com</h3>
-        </article>
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/charte.jpg" alt="Réseaux sociaux Bonapro"></div>
-            <p class="work__cat">Digital marketing</p>
-            <h3 class="work__title">Gestion réseaux sociaux — Bonapro</h3>
-        </article>
-        <article class="work will-reveal">
-            <div class="work__media"><img src="assets/img/audiovisuel.jpg" alt="Shooting photo et drone"></div>
-            <p class="work__cat">Audiovisuel</p>
-            <h3 class="work__title">Shooting photos &amp; drone — Bonapro</h3>
-        </article>
-    </div>
-</section>
-
-<!-- ============ ④c PROCESSUS — 4 étapes (miroir du futur portail
-     client de la plateforme : Brief → Création → Validation →
-     Livraison) ============ -->
-<section class="process" id="processus">
-    <h2 class="sec-title">Comment nous travaillons</h2>
-
-    <div class="process__grid">
-        <div class="step will-reveal">
-            <p class="step__num">01</p>
-            <h3 class="step__title">Brief &amp; devis</h3>
-            <p class="step__desc">Vous nous expliquez votre besoin, nous cadrons le projet et le budget — sous 48h.</p>
-        </div>
-        <div class="step will-reveal">
-            <p class="step__num">02</p>
-            <h3 class="step__title">Création</h3>
-            <p class="step__desc">Nos designers conçoivent, vous suivez l'avancement en toute transparence.</p>
-        </div>
-        <div class="step will-reveal">
-            <p class="step__num">03</p>
-            <h3 class="step__title">Validation</h3>
-            <p class="step__desc">Vous validez ou demandez des ajustements — rien ne part sans votre accord.</p>
-        </div>
-        <div class="step will-reveal">
-            <p class="step__num">04</p>
-            <h3 class="step__title">Livraison &amp; suivi</h3>
-            <p class="step__desc">Fichiers finaux, impression, mise en ligne — et un suivi qui ne s'arrête pas là.</p>
-        </div>
-    </div>
-</section>
-
-<!-- ============ ⑤ WE BELIEVE — storytelling ============ -->
-<section class="believe" id="croyances">
-    <h2 class="sec-title">Nous croyons</h2>
-
-    <p class="believe__line">
-        Qu'une marque forte ne <span class="muted">se décrit pas</span> —
-        elle <span class="accent">se ressent.</span>
-    </p>
-    <p class="believe__line">
-        Que chaque détail compte : <span class="accent">du pixel</span>
-        à la <span class="accent">bâche grand format.</span>
-    </p>
-    <p class="believe__line">
-        Que le digital algérien mérite un standard
-        <span class="accent">international.</span>
-    </p>
-</section>
-
 <!-- ============ ⑥ CHIFFRES — panneau dégradé + compteurs ============ -->
 <section class="stats" id="chiffres">
     <div class="stats__panel reveal">
@@ -206,24 +85,102 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
-<!-- ============ ⑥b TÉMOIGNAGE
-     ⚠️ EXEMPLE À REMPLACER : citation fictive en attendant un vrai
-     retour client (WhatsApp / email). Ne jamais publier sans
-     l'accord écrit du client cité. ============ -->
-<section class="quote">
-    <blockquote class="quote__text will-reveal">
-        « Une équipe réactive qui a su traduire notre image en une
-        identité <span class="accent">professionnelle et cohérente</span>,
-        du print au digital. »
-    </blockquote>
-    <p class="quote__author will-reveal">— Direction marketing, client accompagné depuis 2023 <em>(exemple)</em></p>
+<!-- ============ ⑦ MARQUEE — bandeau défilant plein écran ============ -->
+<div class="strip" aria-hidden="true">
+    <div class="strip__track">
+        <!-- contenu dupliqué (×2) pour une boucle sans couture -->
+        <span>BRANDING</span><span class="strip__dot">•</span>
+        <span>WEB</span><span class="strip__dot">•</span>
+        <span>QR CODES</span><span class="strip__dot">•</span>
+        <span>AUDIOVISUEL</span><span class="strip__dot">•</span>
+        <span>IMPRESSION</span><span class="strip__dot">•</span>
+        <span>BRANDING</span><span class="strip__dot">•</span>
+        <span>WEB</span><span class="strip__dot">•</span>
+        <span>QR CODES</span><span class="strip__dot">•</span>
+        <span>AUDIOVISUEL</span><span class="strip__dot">•</span>
+        <span>IMPRESSION</span><span class="strip__dot">•</span>
+    </div>
+</div>
+
+<!-- ============ ⑧ RÉALISATIONS — portfolio (cartes image + tilt) ============ -->
+<section class="portfolio" id="realisations">
+    <div class="portfolio__head">
+        <h2 class="portfolio__title reveal">Nos réalisations</h2>
+        <a href="#contact" class="portfolio__all reveal">Tout voir →</a>
+    </div>
+    <div class="portfolio__grid">
+        <?php
+        // Les projets/clients sont authentiques ; les visuels illustrent (à remplacer).
+        $works = [
+            [1, 'Identité visuelle',      'Charte graphique — Eurl Bonapro'],
+            [2, 'Impression grand format','Bâches &amp; signalétique — Sonatrach'],
+            [3, 'QR Codes',               'QR Code dynamique — Café Central'],
+            [4, 'Web',                    'Site vitrine — twinshamis.com'],
+            [5, 'Digital marketing',      'Gestion réseaux sociaux — Bonapro'],
+            [6, 'Audiovisuel',            'Shooting photos &amp; drone'],
+        ];
+        foreach ($works as [$n, $cat, $title]): ?>
+            <article class="pf reveal" data-tilt>
+                <div class="pf__media">
+                    <!-- onerror : si l'image manque, on la masque → le dégradé de marque reste. -->
+                    <img src="assets/images/portfolio/portfolio-<?= $n ?>.jpg" alt="<?= strip_tags($title) ?>"
+                         loading="lazy" onerror="this.style.display='none'">
+                </div>
+                <div class="pf__body">
+                    <p class="pf__cat"><?= $cat ?></p>
+                    <h3 class="pf__title"><?= $title ?></h3>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
 </section>
 
-<!-- ============ ⑦ CTA géant ============ -->
-<section class="cta" id="contact">
-    <h2 class="cta__title will-reveal">Discutons<span class="accent">.</span></h2>
-    <p class="will-reveal">Un projet, une idée, une marque à réinventer ?</p>
-    <a href="mailto:arezki69@gmail.com" class="btn btn--primary will-reveal">arezki69@gmail.com</a>
+<!-- ============ ⑨ PROCESS — panneau dégradé (3 étapes) ============ -->
+<section class="how" id="processus">
+    <div class="how__panel reveal">
+        <p class="how__label">Comment ça marche —</p>
+        <div class="how__grid">
+            <div class="how__step">
+                <p class="how__num">01</p>
+                <h3 class="how__title">Brief &amp; devis</h3>
+                <p class="how__desc">Vous nous expliquez votre besoin, nous cadrons le projet et le budget — sous 48h.</p>
+            </div>
+            <div class="how__step">
+                <p class="how__num">02</p>
+                <h3 class="how__title">Création</h3>
+                <p class="how__desc">Nos designers conçoivent, vous suivez l'avancement en toute transparence.</p>
+            </div>
+            <div class="how__step">
+                <p class="how__num">03</p>
+                <h3 class="how__title">Validation</h3>
+                <p class="how__desc">Vous validez ou demandez des ajustements — rien ne part sans votre accord.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ⑩ CROYANCE — déclaration centrée ============ -->
+<section class="belief" id="croyances">
+    <p class="belief__label reveal">Nous croyons —</p>
+    <h2 class="belief__line reveal">
+        Qu'une marque forte ne se voit pas — elle <span class="belief__accent">se ressent.</span>
+    </h2>
+</section>
+
+<!-- ============ ⑪ CONTACT — Discutons + carte de contact ============ -->
+<section class="contact" id="contact">
+    <div class="contact__grid">
+        <div class="contact__left reveal">
+            <p class="contact__status"><span class="contact__dot" aria-hidden="true"></span> Disponibles pour vos projets</p>
+            <h2 class="contact__title">Discutons<span class="contact__accent">.</span></h2>
+            <p class="contact__sub">Un projet, une idée, une marque à réinventer ? Écrivez-nous — on vous répond sous 48h.</p>
+        </div>
+        <div class="contact__card reveal" data-tilt>
+            <h3 class="contact__card-title">Démarrons la conversation</h3>
+            <a href="mailto:arezki69@gmail.com" class="contact__mail">arezki69@gmail.com</a>
+            <a href="<?= e(BASE_URL) ?>/register" class="hero__cta hero__cta--primary contact__btn">Demander un devis</a>
+        </div>
+    </div>
 </section>
 
 <!-- ============ FOOTER ============ -->
