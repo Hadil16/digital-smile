@@ -393,19 +393,22 @@
 .strip__dot { color: #8BC63F; }
 @keyframes strip-scroll { to { transform: translateX(-50%); } }
 
-/* ⑧ RÉALISATIONS — panneau sombre + cartes portfolio (tilt 3D) */
+/* ⑧ RÉALISATIONS — panneau sombre + cartes portfolio (réf. A2 : tilt + zoom) */
 .portfolio {
     margin: 16px; border-radius: 28px; background: #17142e; color: #fff;
     padding: clamp(44px, 6vw, 84px) clamp(24px, 4vw, 56px);
 }
 .portfolio__head {
     display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-    max-width: var(--maxw); margin: 0 auto clamp(28px, 4vw, 44px);
+    max-width: var(--maxw); margin: 0 auto 34px;
 }
-.portfolio__title { font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 40px); color: #fff; }
-.portfolio__all { font-family: 'Poppins', var(--font-display); font-weight: 600; color: #8BC63F; }
-.portfolio__grid { max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.portfolio__title { font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: 40px; margin: 0; color: #fff; }
+.portfolio__all { font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 14px; color: #8BC63F; }
+.portfolio__grid { max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+/* Enveloppe = cible du reveal (délai décalé en inline). La carte porte le tilt. */
+.pf-item { }
 .pf {
+    height: 100%;
     background: rgba(255, 255, 255, .035);
     border: 1px solid rgba(255, 255, 255, .09);
     border-radius: 20px; overflow: hidden;
@@ -413,12 +416,13 @@
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 .pf:hover { border-color: rgba(139, 198, 63, .5); }
-.pf__media { height: 210px; background: linear-gradient(135deg, #4A3F9E, #8BC63F); }
-.pf__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pf__body { padding: 20px 22px; }
+.pf__media { height: 210px; overflow: hidden; background: linear-gradient(135deg, #4A3F9E, #8BC63F); }
+.pf__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .45s ease; }
+.pf:hover .pf__media img { transform: scale(1.05); }   /* léger zoom, rogné par overflow */
+.pf__body { padding: 18px 20px 22px; }
 .pf__cat {
-    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 12px;
-    letter-spacing: .12em; text-transform: uppercase; color: #8BC63F; margin-bottom: 6px;
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 11px;
+    letter-spacing: .14em; text-transform: uppercase; color: #8BC63F; margin-bottom: 6px;
 }
 .pf__title { font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 17px; color: #fff; line-height: 1.3; }
 
@@ -485,11 +489,12 @@
 }
 .contact__btn { width: 100%; justify-content: center; }
 
+@media (max-width: 980px) { .portfolio__grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 860px) {
-    .portfolio__grid { grid-template-columns: 1fr; }
     .how__grid { grid-template-columns: 1fr; }
     .contact__grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 560px) { .portfolio__grid { grid-template-columns: 1fr; } }
 /* Accessibilité : coupe les animations décoratives si mouvement réduit. */
 @media (prefers-reduced-motion: reduce) {
     .strip__track { animation: none; }
