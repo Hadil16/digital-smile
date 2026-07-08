@@ -90,6 +90,25 @@ class Order extends Model
         return $this->db->query($sql)->fetchAll();
     }
 
+    /**
+     * Commandes ACCEPTÉES ('approved') mais pas encore affectées (aucun projet).
+     * Le LEFT JOIN + p.id IS NULL isole celles qui attendent une affectation.
+     * Les plus récentes d'abord. Jointures : client (nom) et service (nom).
+     */
+    public function allApprovedUnassigned(): array
+    {
+        $sql = "SELECT o.id, o.code, u.full_name AS client_name, s.name AS service_name,
+                       o.project_name, o.budget, o.deadline, o.created_at
+                FROM orders o
+                JOIN clients  c ON c.id = o.client_id
+                JOIN users    u ON u.id = c.user_id
+                JOIN services s ON s.id = o.service_id
+                LEFT JOIN projects p ON p.order_id = o.id
+                WHERE o.status = 'approved' AND p.id IS NULL
+                ORDER BY o.created_at DESC, o.id DESC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
     /** Vue d'ensemble : toutes les commandes avec leur statut (pour l'admin). */
     public function allWithStatus(): array
     {
