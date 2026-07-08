@@ -38,6 +38,9 @@ Seules pages HTTP existantes aujourd'hui :
 | `/admin/commandes/approuver` | POST | `csrf` + `order_id` → statut `approved`. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes/refuser` | POST | `csrf` + `order_id` → statut `rejected`. Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
 | `/admin/commandes/affecter` | POST | `csrf` + `order_id` + `employee_id` → statut `in_progress` + crée/maj le `projects` (employé, statut `assigned`). Garde `require_role('admin')` | ✅ Depuis le 07/07/2026 |
+| `/admin/factures` | GET | Facturation : commandes terminées à facturer + factures émises. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
+| `/admin/factures/generer` | POST | `csrf` + `order_id` → crée `FAC-AAAA-NNNN` (HT = budget, TVA 19 %, TTC) si la commande est `completed` et pas déjà facturée. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
+| `/admin/factures/{numero}` | GET | Détail d'une facture (société + client + commande + montants). Numéro extrait du chemin. Garde `require_role('admin')` | ✅ Depuis le 08/07/2026 |
 | toute autre URL | * | Réécrite vers `index.php?url=...` → **page 404 propre** (`app/Views/errors/404.php`, code HTTP 404) | ✅ Depuis le 05/07/2026 |
 
 ## 2. Routes prévues (Phase 5-6) — plan indicatif, non implémenté
@@ -61,7 +64,7 @@ Ces routes serviront le workflow des commandes via le front controller
 
 | Route (cible) | Méthode | Rôle métier | Accès (RBAC) |
 |---|---|---|---|
-| `/admin/invoices/{code}` | GET | Facture (HTML, PDF via Dompdf en Phase 8) | admin / client concerné |
+| `/admin/invoices/{code}` | GET | **Implémenté** (admin) sous `/admin/factures/{numero}` (voir §1). Export PDF (Dompdf) + accès client concerné : encore à faire | admin / client concerné |
 
 ## 3. Règles non négociables pour toute future route (cf. `AI_RULES.md`)
 

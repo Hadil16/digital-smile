@@ -20,6 +20,7 @@ $stats = [
     ['icon' => '✔️', 'label' => 'Terminées',        'value' => (int) ($statusCounts['completed'] ?? 0)],
     ['icon' => '👥', 'label' => 'Clients',          'value' => (int) ($totalClients ?? 0)],
     ['icon' => '🧑‍💼', 'label' => 'Employés',       'value' => (int) ($totalEmployees ?? 0)],
+    ['icon' => '🧾', 'label' => 'Factures',         'value' => (int) ($totalInvoices ?? 0)],
 ];
 
 // Données des graphiques (converties en JSON plus bas, lues par le script du footer).
@@ -147,6 +148,7 @@ $sumServices = $pair($topServices['labels'], $topServices['values']);
         <div class="dash__actions">
             <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/commandes">Gérer les demandes</a>
             <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/employes">Gérer l'équipe</a>
+            <a class="dash__btn" href="<?= e(BASE_URL) ?>/admin/factures">Facturation</a>
             <a class="dash__btn dash__btn--ghost" href="<?= e(BASE_URL) ?>/logout">Déconnexion</a>
         </div>
     </div>

@@ -29,6 +29,7 @@ require_once __DIR__ . '/../app/Models/Order.php';               // commandes
 require_once __DIR__ . '/../app/Models/Employee.php';            // employés (affectation)
 require_once __DIR__ . '/../app/Models/Department.php';          // départements (création employé)
 require_once __DIR__ . '/../app/Models/Project.php';             // projets (espace employé)
+require_once __DIR__ . '/../app/Models/Invoice.php';             // factures
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
@@ -86,6 +87,11 @@ $router->add('employe/taches',              [new EmployeeController(), 'tasks'])
 $router->add('employe/taches/progression',  [new EmployeeController(), 'updateProgress']);
 $router->add('employe/taches/livrer',       [new EmployeeController(), 'uploadFile']);
 
+// Facturation admin : liste (GET) + génération (POST + CSRF). Le détail d'une
+// facture (numéro variable) est reconnu plus bas, avant le dispatch.
+$router->add('admin/factures',         [new AdminController(), 'invoices']);
+$router->add('admin/factures/generer', [new AdminController(), 'generateInvoice']);
+
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
 $url = trim((string) ($_GET['url'] ?? ''), '/');
@@ -101,6 +107,10 @@ if (preg_match('#^client/commande/([A-Za-z0-9\-]+)(?:/(telecharger|confirmer))?$
         'confirmer'   => $client->confirmReception($number),
         default       => $client->showOrder($number),
     };
+} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)$#', $url, $m) && $m[1] !== 'generer') {
+    // Détail d'une facture par son numéro (FAC-...). 'generer' est exclu :
+    // il est géré par sa route exacte ci-dessus.
+    (new AdminController())->showInvoice($m[1]);
 } else {
     $router->dispatch($url);
 }

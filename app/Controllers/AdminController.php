@@ -20,12 +20,14 @@ class AdminController
     private ?User       $userModel       = null;
     private ?Department $departmentModel = null;
     private ?Client     $clientModel     = null;
+    private ?Invoice    $invoiceModel    = null;
 
     private function orderM(): Order          { return $this->orderModel      ??= new Order(); }
     private function employeeM(): Employee    { return $this->employeeModel   ??= new Employee(); }
     private function userM(): User            { return $this->userModel       ??= new User(); }
     private function deptM(): Department       { return $this->departmentModel ??= new Department(); }
     private function clientM(): Client         { return $this->clientModel     ??= new Client(); }
+    private function invoiceM(): Invoice       { return $this->invoiceModel    ??= new Invoice(); }
 
     /** Tableau de bord : cartes de statistiques + accès à la gestion. */
     public function dashboard(): void
@@ -37,6 +39,7 @@ class AdminController
         $totalOrders    = $this->orderM()->countTotal();
         $totalClients   = $this->clientM()->countTotal();
         $totalEmployees = $this->employeeM()->countTotal();
+        $totalInvoices  = $this->invoiceM()->countTotal();
 
         // Séries pour les graphiques (converties en JSON dans la vue).
         $monthly     = $this->orderM()->monthlyCounts(6); // courbe : commandes/mois
@@ -109,6 +112,48 @@ class AdminController
         $this->orderM()->assignEmployee($orderId, $employeeId);
         $_SESSION['flash'] = 'Commande affectée à l\'employé.';
         redirect('/admin/commandes');
+    }
+
+    /** Facturation : commandes terminées à facturer + factures déjà émises. */
+    public function invoices(): void
+    {
+        require_role('admin');
+        $toInvoice = $this->orderM()->completedWithoutInvoice(); // candidates
+        $invoices  = $this->invoiceM()->allWithDetails();
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
+        require ROOT_PATH . '/app/Views/admin/invoices.php';
+    }
+
+    /** Génère la facture d'une commande terminée (HT + TVA + TTC). */
+    public function generateInvoice(): void
+    {
+        require_role('admin');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/admin/factures');
+        }
+
+        $code = $this->invoiceM()->createFromOrder((int) ($_POST['order_id'] ?? 0));
+        $_SESSION['flash'] = $code !== ''
+            ? "Facture $code générée."
+            : 'Facturation impossible : commande non terminée ou déjà facturée.';
+        redirect('/admin/factures');
+    }
+
+    /** Détail d'une facture (numéro dans l'URL). */
+    public function showInvoice(string $number): void
+    {
+        require_role('admin');
+        $invoice = $this->invoiceM()->findByNumber($number);
+        if ($invoice === null) {
+            http_response_code(404);
+            require ROOT_PATH . '/app/Views/errors/404.php';
+            return;
+        }
+        require ROOT_PATH . '/app/Views/admin/invoice-detail.php';
     }
 
     /** Gestion de l'équipe : formulaire de création + liste des employés. */

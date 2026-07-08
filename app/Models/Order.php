@@ -109,6 +109,25 @@ class Order extends Model
         return $this->db->query($sql)->fetchAll();
     }
 
+    /**
+     * Commandes TERMINÉES ('completed') qui n'ont pas encore de facture
+     * (candidates à la facturation). LEFT JOIN invoices + i.id IS NULL.
+     * Les plus récentes d'abord.
+     */
+    public function completedWithoutInvoice(): array
+    {
+        $sql = "SELECT o.id, o.code, u.full_name AS client_name, s.name AS service_name,
+                       o.project_name, o.budget, o.created_at
+                FROM orders o
+                JOIN clients  c ON c.id = o.client_id
+                JOIN users    u ON u.id = c.user_id
+                JOIN services s ON s.id = o.service_id
+                LEFT JOIN invoices i ON i.order_id = o.id
+                WHERE o.status = 'completed' AND i.id IS NULL
+                ORDER BY o.created_at DESC, o.id DESC";
+        return $this->db->query($sql)->fetchAll();
+    }
+
     /** Vue d'ensemble : toutes les commandes avec leur statut (pour l'admin). */
     public function allWithStatus(): array
     {
