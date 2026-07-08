@@ -33,9 +33,10 @@ class AdminController
     public function orders(): void
     {
         require_role('admin');
-        $pending   = $this->orderM()->allPending();
-        $allOrders = $this->orderM()->allWithStatus();
-        $employees = $this->employeeM()->allActive();
+        $pending            = $this->orderM()->allPending();
+        $approvedUnassigned = $this->orderM()->allApprovedUnassigned(); // acceptées, sans affectation
+        $allOrders          = $this->orderM()->allWithStatus();
+        $employees          = $this->employeeM()->allActive();
 
         // Message éphémère (flash) posé par une action précédente.
         $flash = $_SESSION['flash'] ?? null;

@@ -153,6 +153,47 @@ $fmtDate   = fn($d) => $d ? date('d/m/Y', strtotime($d)) : '—';
             <?php endforeach; ?>
         <?php endif; ?>
 
+        <!-- ============ Commandes acceptées à affecter ============ -->
+        <h2 class="adm__h2">À affecter</h2>
+
+        <?php if (empty($approvedUnassigned)): ?>
+            <p class="empty">Aucune commande à affecter.</p>
+        <?php else: ?>
+            <?php foreach ($approvedUnassigned as $o): ?>
+                <article class="order">
+                    <div class="order__head">
+                        <span class="order__code"><?= e($o['code']) ?></span>
+                        <span class="badge badge--approved">Acceptée</span>
+                    </div>
+
+                    <div class="order__meta">
+                        <div><span>Client</span><?= e($o['client_name']) ?></div>
+                        <div><span>Service</span><?= e($o['service_name']) ?></div>
+                        <div><span>Projet</span><?= e($o['project_name']) ?></div>
+                        <div><span>Budget</span><?= e($fmtBudget($o['budget'])) ?></div>
+                        <div><span>Échéance</span><?= e($fmtDate($o['deadline'])) ?></div>
+                        <div><span>Reçue le</span><?= e($fmtDate($o['created_at'])) ?></div>
+                    </div>
+
+                    <div class="order__actions">
+                        <!-- Affecter à un employé (même formulaire que pour les demandes en attente) -->
+                        <form method="post" action="<?= e(BASE_URL) ?>/admin/commandes/affecter">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="order_id" value="<?= (int) $o['id'] ?>">
+                            <label class="sr-only" for="emp-<?= (int) $o['id'] ?>">Employé</label>
+                            <select class="select" id="emp-<?= (int) $o['id'] ?>" name="employee_id" required>
+                                <option value="">— Employé —</option>
+                                <?php foreach ($employees as $emp): ?>
+                                    <option value="<?= (int) $emp['id'] ?>"><?= e($emp['full_name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button class="btn btn--assign" type="submit">Affecter</button>
+                        </form>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
         <!-- ============ Vue d'ensemble de toutes les commandes ============ -->
         <h2 class="adm__h2">Toutes les commandes</h2>
 
