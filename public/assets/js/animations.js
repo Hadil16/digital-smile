@@ -274,3 +274,20 @@ if (burger) burger.addEventListener('click', () => {
     reveals.forEach((el) => io.observe(el));
     counters.forEach((el) => io.observe(el));
 })();
+
+/* ================================================================
+   ⑪ Tilt 3D léger sur les cartes [data-tilt] au passage de la souris.
+   Désactivé si mouvement réduit ou appareil sans vrai survol.
+   ================================================================ */
+if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('[data-tilt]').forEach((carte) => {
+        carte.addEventListener('mousemove', (e) => {
+            const r = carte.getBoundingClientRect();
+            const px = (e.clientX - r.left) / r.width  - 0.5;   /* -0.5 … 0.5 */
+            const py = (e.clientY - r.top)  / r.height - 0.5;
+            carte.style.transform =
+                `perspective(700px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg) translateY(-4px)`;
+        });
+        carte.addEventListener('mouseleave', () => { carte.style.transform = ''; });
+    });
+}
