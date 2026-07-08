@@ -107,6 +107,17 @@ class Invoice extends Model
         return (int) $this->db->query("SELECT COUNT(*) FROM invoices")->fetchColumn();
     }
 
+    /** Numéro de la facture d'une commande (par order_id), ou null si aucune. */
+    public function numberForOrder(int $orderId): ?string
+    {
+        $stmt = $this->db->prepare(
+            "SELECT code FROM invoices WHERE order_id = :oid ORDER BY id DESC LIMIT 1"
+        );
+        $stmt->execute([':oid' => $orderId]);
+        $code = $stmt->fetchColumn();
+        return $code !== false ? (string) $code : null;
+    }
+
     /**
      * Prochain numéro FAC-AAAA-NNNN (compteur par année). La contrainte
      * UNIQUE sur `code` garantit qu'aucun doublon ne persiste.

@@ -11,11 +11,13 @@
 class ClientController
 {
     // Modèles chargés en "lazy" (pas de connexion DB inutile).
-    private ?Order   $orders   = null;
-    private ?Service $services = null;
+    private ?Order   $orders       = null;
+    private ?Service $services     = null;
+    private ?Invoice $invoiceModel = null;
 
     private function orders(): Order     { return $this->orders   ??= new Order(); }
     private function services(): Service { return $this->services ??= new Service(); }
+    private function invoices(): Invoice { return $this->invoiceModel ??= new Invoice(); }
 
     /** Tableau de bord : bouton "nouvelle demande" + liste des commandes. */
     public function dashboard(): void
@@ -112,6 +114,9 @@ class ClientController
             ? $this->orders()->deliverableFor((int) $order['id'])
             : null;
 
+        // Numéro de facture si une facture existe pour cette commande (lien imprimer).
+        $invoiceNumber = $this->invoices()->numberForOrder((int) $order['id']);
+
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
 
@@ -166,6 +171,23 @@ class ClientController
             ? 'Réception confirmée, merci !'
             : 'Cette commande ne peut pas être confirmée pour le moment.';
         redirect('/client/commande/' . rawurlencode($number));
+    }
+
+    /** Version imprimable / PDF d'une facture — SEULEMENT si elle est au client. */
+    public function printInvoice(string $number): void
+    {
+        require_role('client');
+
+        $invoice = $this->invoices()->findByNumber($number);
+        // Propriété : la commande liée à la facture doit appartenir au client.
+        if ($invoice === null
+            || $this->orders()->findForClient($invoice['order_code'], (int) $_SESSION['user_id']) === null) {
+            $this->notFound();
+            return;
+        }
+
+        // Vue d'impression partagée avec l'admin (variable $invoice).
+        require ROOT_PATH . '/app/Views/admin/invoice-print.php';
     }
 
     /** Page 404 propre du site (commande introuvable ou non autorisée). */

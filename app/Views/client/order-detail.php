@@ -157,6 +157,16 @@ $orderUrl  = e(BASE_URL) . '/client/commande/' . rawurlencode($order['code']);
                 <?php endif; ?>
             </div>
         <?php endif; ?>
+
+        <?php if (!empty($invoiceNumber)): ?>
+            <!-- Facture disponible : lien vers la version imprimable / PDF. -->
+            <div class="actions">
+                <a class="btn btn--download"
+                   href="<?= e(BASE_URL) ?>/client/facture/<?= e(rawurlencode($invoiceNumber)) ?>/imprimer">
+                    Télécharger / Imprimer la facture
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </main>
 

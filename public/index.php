@@ -112,10 +112,14 @@ if (preg_match('#^client/commande/([A-Za-z0-9\-]+)(?:/(telecharger|confirmer))?$
         'confirmer'   => $client->confirmReception($number),
         default       => $client->showOrder($number),
     };
-} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)$#', $url, $m) && $m[1] !== 'generer') {
-    // Détail d'une facture par son numéro (FAC-...). 'generer' est exclu :
-    // il est géré par sa route exacte ci-dessus.
-    (new AdminController())->showInvoice($m[1]);
+} elseif (preg_match('#^client/facture/([A-Za-z0-9\-]+)/imprimer$#', $url, $m)) {
+    // Facture imprimable côté client (droits vérifiés dans le contrôleur).
+    (new ClientController())->printInvoice($m[1]);
+} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)(/imprimer)?$#', $url, $m) && $m[1] !== 'generer') {
+    // Facture par numéro (FAC-...) : détail, ou version imprimable si /imprimer.
+    // 'generer' est exclu (géré par sa route exacte ci-dessus).
+    $admin = new AdminController();
+    !empty($m[2]) ? $admin->printInvoice($m[1]) : $admin->showInvoice($m[1]);
 } else {
     $router->dispatch($url);
 }
