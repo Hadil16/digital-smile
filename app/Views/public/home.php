@@ -102,7 +102,7 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </div>
 
-<!-- ============ ⑧ RÉALISATIONS — portfolio (cartes image + tilt) ============ -->
+<!-- ============ ⑧ RÉALISATIONS — portfolio (cartes image + tilt + zoom) ============ -->
 <section class="portfolio" id="realisations">
     <div class="portfolio__head">
         <h2 class="portfolio__title reveal">Nos réalisations</h2>
@@ -110,25 +110,31 @@ require __DIR__ . '/../partials/header.php';
     </div>
     <div class="portfolio__grid">
         <?php
-        // Les projets/clients sont authentiques ; les visuels illustrent (à remplacer).
+        // Projets/clients authentiques ; visuels illustratifs (à remplacer).
         $works = [
-            [1, 'Identité visuelle',      'Charte graphique — Eurl Bonapro'],
-            [2, 'Impression grand format','Bâches &amp; signalétique — Sonatrach'],
-            [3, 'QR Codes',               'QR Code dynamique — Café Central'],
-            [4, 'Web',                    'Site vitrine — twinshamis.com'],
-            [5, 'Digital marketing',      'Gestion réseaux sociaux — Bonapro'],
-            [6, 'Audiovisuel',            'Shooting photos &amp; drone'],
+            ['Identité visuelle',       'Charte graphique — Eurl Bonapro'],
+            ['Impression grand format', 'Bâches &amp; signalétique — Sonatrach'],
+            ['QR Codes',                'QR Code dynamique — Café Central'],
+            ['Web',                     'Site vitrine — twinshamis.com'],
+            ['Digital marketing',       'Gestion réseaux sociaux — Bonapro'],
+            ['Audiovisuel',             'Shooting photos &amp; drone'],
         ];
-        foreach ($works as [$n, $cat, $title]): ?>
-            <article class="pf reveal" data-tilt>
-                <div class="pf__media">
-                    <!-- onerror : si l'image manque, on la masque → le dégradé de marque reste. -->
-                    <img src="assets/images/portfolio/portfolio-<?= $n ?>.jpg" alt="<?= strip_tags($title) ?>"
-                         loading="lazy" onerror="this.style.display='none'">
-                </div>
-                <div class="pf__body">
-                    <p class="pf__cat"><?= $cat ?></p>
-                    <h3 class="pf__title"><?= $title ?></h3>
+        foreach ($works as $i => [$cat, $title]):
+            $n = $i + 1;
+            // Reveal décalé sur l'enveloppe ; le tilt (sur la carte) reste réactif.
+            $delay = number_format($i * 0.06, 2, '.', '');
+        ?>
+            <article class="pf-item reveal" style="transition-delay: <?= $delay ?>s">
+                <div class="pf" data-tilt>
+                    <div class="pf__media">
+                        <!-- onerror : image manquante → masquée, le dégradé de marque reste. -->
+                        <img src="assets/images/portfolio/portfolio-<?= $n ?>.jpg" alt="<?= strip_tags($title) ?>"
+                             loading="lazy" onerror="this.style.display='none'">
+                    </div>
+                    <div class="pf__body">
+                        <p class="pf__cat"><?= $cat ?></p>
+                        <h3 class="pf__title"><?= $title ?></h3>
+                    </div>
                 </div>
             </article>
         <?php endforeach; ?>
