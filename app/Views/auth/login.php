@@ -10,37 +10,60 @@
 require ROOT_PATH . '/app/Views/partials/header.php';
 ?>
 <style>
-    /* Styles auto-portés de la page d'authentification.
-       Couleurs de marque (copie des tokens de base.css, cf. errors/404.php). */
-    .auth { --violet: #4A3F9E; --lime: #8BC63F;
-        min-height: 70vh; display: flex; align-items: center; justify-content: center;
-        padding: 96px 24px 64px; font-family: 'Inter', system-ui, sans-serif; }
-    /* L'intro flash de l'accueil n'a pas lieu d'être hors de la page d'accueil. */
-    .intro { display: none !important; }
-    .auth__card { width: 100%; max-width: 420px; background: #fff;
-        border: 1px solid #eee; border-radius: 18px; padding: 40px 32px;
-        box-shadow: 0 20px 60px rgba(74, 63, 158, .08); }
-    .auth__title { font-family: 'Poppins', system-ui, sans-serif; font-weight: 800;
-        font-size: clamp(24px, 4vw, 32px); color: var(--violet); margin: 0 0 24px; }
-    .auth__error { background: #fdecec; color: #b3261e; border-radius: 10px;
-        padding: 12px 14px; margin: 0 0 20px; font-size: 14px; }
-    .auth__label { display: block; font-weight: 600; font-size: 14px;
-        color: #333; margin: 0 0 6px; }
-    .auth__input { width: 100%; box-sizing: border-box; padding: 12px 14px;
-        margin: 0 0 18px; border: 1px solid #d5d5db; border-radius: 10px;
-        font-size: 15px; font-family: inherit; }
-    .auth__input:focus { outline: 2px solid var(--violet); outline-offset: 1px;
-        border-color: var(--violet); }
+    /* Scène d'authentification premium sombre (accent de design, fixe dans les 2 thèmes).
+       Styles auto-portés — mêmes classes .auth__* que register.php. */
+    .auth {
+        position: relative; isolation: isolate; overflow: hidden;
+        min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        padding: 120px 24px 80px; color: #fff;
+        font-family: 'Poppins', system-ui, sans-serif;
+        background: linear-gradient(165deg, #1a1636, #14122b 60%, #0f0d1f);
+    }
+    .intro { display: none !important; } /* pas d'intro flash hors accueil */
+    /* Blobs lumineux flous derrière la carte. */
+    .auth__blob { position: absolute; z-index: 0; width: 46vw; max-width: 520px; aspect-ratio: 1;
+        border-radius: 50%; filter: blur(70px); opacity: .5; pointer-events: none; }
+    .auth__blob--v { top: -12%; left: -8%; background: radial-gradient(circle, rgba(74, 63, 158, .6), transparent 65%); }
+    .auth__blob--l { bottom: -14%; right: -10%; background: radial-gradient(circle, rgba(139, 198, 63, .45), transparent 65%); }
+
+    .auth__card {
+        position: relative; z-index: 1; width: 100%; max-width: 420px;
+        background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 26px; padding: 38px;
+        -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, .4);
+    }
+    .auth__brand { display: flex; align-items: center; gap: 10px; margin: 0 0 22px; }
+    .auth__brand img { height: 34px; width: auto; border-radius: 8px; }
+    .auth__brand span { font-family: 'Baloo 2', 'Poppins', system-ui, sans-serif; font-weight: 800; font-size: 20px; }
+    .auth__title { font-family: 'Baloo 2', 'Poppins', system-ui, sans-serif; font-weight: 800;
+        font-size: clamp(26px, 4vw, 34px); color: #fff; margin: 0 0 24px; }
+    .auth__error { background: rgba(179, 38, 30, .18); border: 1px solid rgba(229, 114, 107, .4);
+        color: #ffb3ad; border-radius: 12px; padding: 12px 14px; margin: 0 0 20px; font-size: 14px; }
+    .auth__label { display: block; font-weight: 600; font-size: 14px; color: rgba(255, 255, 255, .8); margin: 0 0 6px; }
+    .auth__input { width: 100%; box-sizing: border-box; padding: 13px 15px; margin: 0 0 18px;
+        background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .14);
+        border-radius: 12px; font-size: 15px; font-family: inherit; color: #fff; }
+    .auth__input::placeholder { color: rgba(255, 255, 255, .4); }
+    .auth__input:focus { outline: none; border-color: #8BC63F; box-shadow: 0 0 0 3px rgba(139, 198, 63, .28); }
+    .auth__hint { font-size: 12px; color: rgba(255, 255, 255, .5); margin: -12px 0 18px; }
     .auth__btn { width: 100%; border: 0; cursor: pointer; margin-top: 6px;
-        background: var(--violet); color: #fff; font-weight: 600; font-size: 15px;
-        padding: 14px; border-radius: 999px; transition: background .2s; }
-    .auth__btn:hover { background: var(--lime); }
-    .auth__alt { text-align: center; font-size: 14px; color: #666; margin: 22px 0 0; }
-    .auth__alt a { color: var(--violet); font-weight: 600; }
+        font-family: 'Poppins', system-ui, sans-serif; font-weight: 700; font-size: 15px;
+        background: #8BC63F; color: #1a1730; padding: 15px; border-radius: 100px;
+        box-shadow: 0 14px 34px rgba(139, 198, 63, .3); transition: transform .2s ease, box-shadow .2s ease; }
+    .auth__btn:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(139, 198, 63, .42); }
+    .auth__alt { text-align: center; font-size: 14px; color: rgba(255, 255, 255, .65); margin: 22px 0 0; }
+    .auth__alt a { color: #8BC63F; font-weight: 600; }
 </style>
 
 <main class="auth">
+    <span class="auth__blob auth__blob--v" aria-hidden="true"></span>
+    <span class="auth__blob auth__blob--l" aria-hidden="true"></span>
     <section class="auth__card">
+        <div class="auth__brand">
+            <img src="assets/img/logo.jpg" alt="">
+            <span>Digital Smile</span>
+        </div>
         <h1 class="auth__title">Connexion</h1>
 
         <?php if (!empty($error)): ?>
