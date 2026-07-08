@@ -3,24 +3,11 @@
 require __DIR__ . '/../partials/header.php';
 ?>
 
-<!-- ============ ② HERO — typo géante sur vidéo ============ -->
+<!-- ============ ② HERO — carte premium sombre (SMILE + blobs + halo souris) ====== -->
 <header class="hero" id="accueil">
-    <div class="hero__media">
-        <!-- ⏳ VIDÉO EN ATTENTE : le fichier assets/video/cubes-logo.mp4
-             n'a pas encore été fourni. En attendant, on affiche l'image
-             hero.jpg directement (zéro requête 404, zéro erreur console).
-
-             Quand la vidéo sera placée dans assets/video/, remplacez
-             la balise <img> ci-dessous par ce bloc :
-
-             <video autoplay muted loop playsinline preload="metadata"
-                    poster="assets/img/hero.jpg">
-                 <source src="assets/video/cubes-logo.mp4" type="video/mp4">
-             </video>
-        -->
-        <img src="assets/img/hero.jpg" alt="">
-    </div>
-
+    <div class="hero__media"><!-- conservé pour l'animation GSAP (masqué en CSS) --></div>
+    <span class="hero__blob hero__blob--a" aria-hidden="true"></span>
+    <span class="hero__blob hero__blob--b" aria-hidden="true"></span>
     <p class="hero__ghost" aria-hidden="true">SMILE</p>
 
     <div class="hero__content">
@@ -34,37 +21,11 @@ require __DIR__ . '/../partials/header.php';
             à votre identité avec créativité et précision.
         </p>
         <div class="hero__btns will-reveal">
-            <a href="#contact" class="btn btn--primary">Demander un devis</a>
-            <a href="#services" class="btn btn--dark btn--marquee">
-                <span class="btn__track">
-                    <span>Explorer</span><span>Explorer</span><span>Explorer</span>
-                    <span>Explorer</span><span>Explorer</span><span>Explorer</span>
-                </span>
-            </a>
+            <a href="<?= e(BASE_URL) ?>/register" class="hero__cta hero__cta--primary">Demander un devis</a>
+            <a href="#services" class="hero__cta hero__cta--ghost">Explorer nos services →</a>
         </div>
     </div>
 </header>
-
-<!-- ============ ②a EXPERTISES — cartes 3D sur fond clair (transition courbée) ===== -->
-<section class="features">
-    <div class="features__grid">
-        <article class="card feature will-reveal">
-            <div class="feature__icon feature__icon--violet" aria-hidden="true">🎨</div>
-            <h3 class="feature__title">Création graphique</h3>
-            <p class="feature__desc">Logos, chartes et identités visuelles qui marquent les esprits.</p>
-        </article>
-        <article class="card feature will-reveal">
-            <div class="feature__icon feature__icon--lime" aria-hidden="true">🌐</div>
-            <h3 class="feature__title">Web &amp; Digital</h3>
-            <p class="feature__desc">Sites vitrines, e-commerce et présence en ligne sur mesure.</p>
-        </article>
-        <article class="card feature will-reveal">
-            <div class="feature__icon feature__icon--violet" aria-hidden="true">🎬</div>
-            <h3 class="feature__title">Audiovisuel</h3>
-            <p class="feature__desc">Shooting photo, vidéo et drone pour valoriser vos projets.</p>
-        </article>
-    </div>
-</section>
 
 <!-- Effet souris du héros : met à jour --mx/--my (halo qui suit le curseur).
      Désactivé si l'utilisateur préfère moins d'animations. Vanilla JS, léger. -->
@@ -112,35 +73,29 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </div>
 
-<!-- ============ ④ SERVICES — liste + image au survol ⭐ ============ -->
+<!-- ============ ④ SERVICES — grille de cartes premium ============ -->
 <section class="services" id="services">
-    <h2 class="sec-title">Ce que nous faisons</h2>
-
-    <ul class="services__list">
-        <li class="service" data-img="assets/img/branding.jpg">
-            <span class="service__name">Création graphique</span>
-            <span class="service__num">01</span>
-        </li>
-        <li class="service" data-img="assets/img/print.jpg">
-            <span class="service__name">Impression</span>
-            <span class="service__num">02</span>
-        </li>
-        <li class="service" data-img="assets/img/web.jpg">
-            <span class="service__name">Web &amp; Digital</span>
-            <span class="service__num">03</span>
-        </li>
-        <li class="service" data-img="assets/img/qrcode.jpg">
-            <span class="service__name">QR Codes</span>
-            <span class="service__num">04</span>
-        </li>
-        <li class="service" data-img="assets/img/audiovisuel.jpg">
-            <span class="service__name">Audiovisuel</span>
-            <span class="service__num">05</span>
-        </li>
-    </ul>
-
-    <!-- L'image flottante qui suit la souris (remplie en JS) -->
-    <div class="services__reveal"><img src="" alt=""></div>
+    <div class="services__head">
+        <h2 class="services__title reveal">Ce que nous faisons</h2>
+        <p class="services__intro reveal">Trois expertises pour donner vie à votre marque.</p>
+    </div>
+    <div class="services__grid">
+        <article class="svc reveal">
+            <div class="svc__icon" aria-hidden="true">🎨</div>
+            <h3 class="svc__title">Création graphique</h3>
+            <p class="svc__desc">Logos, chartes et identités visuelles qui marquent les esprits.</p>
+        </article>
+        <article class="svc reveal">
+            <div class="svc__icon" aria-hidden="true">🌐</div>
+            <h3 class="svc__title">Web &amp; Digital</h3>
+            <p class="svc__desc">Sites vitrines, e-commerce et présence en ligne sur mesure.</p>
+        </article>
+        <article class="svc reveal">
+            <div class="svc__icon" aria-hidden="true">🎬</div>
+            <h3 class="svc__title">Audiovisuel</h3>
+            <p class="svc__desc">Shooting photo, vidéo et drone pour valoriser vos projets.</p>
+        </article>
+    </div>
 </section>
 
 <!-- ============ ④b RÉALISATIONS — projets RÉELS (factures 14-16) ⭐
@@ -233,20 +188,20 @@ require __DIR__ . '/../partials/header.php';
     </p>
 </section>
 
-<!-- ============ ⑥ CHIFFRES réels ============ -->
+<!-- ============ ⑥ CHIFFRES — panneau dégradé + compteurs ============ -->
 <section class="stats" id="chiffres">
-    <div class="stats__grid">
-        <div class="stat will-reveal">
-            <p class="stat__value" data-count="30" data-suffix="+">0<span class="accent"></span></p>
-            <p class="stat__label">Clients accompagnés — dont Sonatrach, Granitex, Bonapro</p>
+    <div class="stats__panel reveal">
+        <div>
+            <p class="stat__value stat__value--lime"><span class="count" data-to="30" data-suffix="+">0+</span></p>
+            <p class="stat__label">clients satisfaits</p>
         </div>
-        <div class="stat will-reveal">
-            <p class="stat__value" data-count="12" data-suffix="">0</p>
-            <p class="stat__label">Expertises métiers, de la création à la livraison</p>
+        <div>
+            <p class="stat__value">2022</p>
+            <p class="stat__label">fondée à Alger</p>
         </div>
-        <div class="stat will-reveal">
-            <p class="stat__value" data-count="2022" data-suffix="">0</p>
-            <p class="stat__label">Année de naissance de Digital Smile à Alger</p>
+        <div>
+            <p class="stat__value stat__value--lime"><span class="count" data-to="100" data-suffix="%">0%</span></p>
+            <p class="stat__label">sur mesure</p>
         </div>
     </div>
 </section>
