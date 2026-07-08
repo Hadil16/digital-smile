@@ -30,11 +30,13 @@ require_once __DIR__ . '/../app/Models/Employee.php';            // employés (a
 require_once __DIR__ . '/../app/Models/Department.php';          // départements (création employé)
 require_once __DIR__ . '/../app/Models/Project.php';             // projets (espace employé)
 require_once __DIR__ . '/../app/Models/Invoice.php';             // factures
+require_once __DIR__ . '/../app/Models/Notification.php';        // notifications internes
 require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
 require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
 require_once __DIR__ . '/../app/Controllers/ClientController.php';
 require_once __DIR__ . '/../app/Controllers/EmployeeController.php';
 require_once __DIR__ . '/../app/Controllers/AdminController.php';
+require_once __DIR__ . '/../app/Controllers/NotificationController.php';
 
 // 1 bis. Session durcie : cookie HttpOnly + SameSite (+ Secure en HTTPS).
 //        On la démarre AVANT toute écriture de session ou jeton CSRF.
@@ -64,6 +66,9 @@ $router->add('logout',   [$auth, 'logout']);
 $router->add('client',  [new ClientController(),   'dashboard']);
 $router->add('employe', [new EmployeeController(), 'dashboard']);
 $router->add('admin',   [new AdminController(),    'dashboard']);
+
+// Notifications : page commune à tous les rôles connectés (require_login).
+$router->add('notifications', [new NotificationController(), 'index']);
 
 // Nouvelle demande du client : GET = formulaire, POST = création.
 $router->add('client/nouvelle-demande', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'

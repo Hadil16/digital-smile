@@ -78,7 +78,7 @@ class ClientController
 
         // Tout est valide : on crée la commande (statut pending).
         $serviceId = (int) $old['service_id'];
-        $this->orders()->createForClient((int) $_SESSION['user_id'], [
+        $code = $this->orders()->createForClient((int) $_SESSION['user_id'], [
             'service_id'   => $serviceId,
             // Pas de champ "nom de projet" dans le formulaire : on le dérive du service.
             'project_name' => $names[$serviceId],
@@ -86,6 +86,12 @@ class ClientController
             'budget'       => ($old['budget'] !== '' ? (float) $old['budget'] : null),
             'deadline'     => $old['deadline'],
         ]);
+
+        // Notifier tous les admins de la nouvelle demande.
+        $notif = new Notification();
+        foreach ($notif->adminUserIds() as $adminId) {
+            $notif->create($adminId, "Nouvelle demande $code", '/admin/commandes');
+        }
 
         redirect('/client');
     }

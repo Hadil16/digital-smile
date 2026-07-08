@@ -89,7 +89,8 @@ class EmployeeController
         $projectId  = (int) ($_POST['project_id'] ?? 0);
 
         // 1. Propriété : la tâche doit appartenir à cet employé.
-        if ($this->projects()->find($projectId, $employeeId) === null) {
+        $project = $this->projects()->find($projectId, $employeeId);
+        if ($project === null) {
             $_SESSION['flash'] = 'Tâche introuvable ou non autorisée.';
             redirect('/employe/taches');
         }
@@ -142,6 +143,15 @@ class EmployeeController
             @unlink($destPath); // on retire le fichier si la base refuse
             $_SESSION['flash'] = 'Action impossible sur cette tâche.';
             redirect('/employe/taches');
+        }
+
+        // Notifier le client que son projet est livré.
+        $notif = new Notification();
+        $info  = $notif->orderInfo((int) $project['order_id']);
+        if ($info) {
+            $notif->create((int) $info['client_user_id'],
+                "Votre projet {$info['code']} est livré",
+                '/client/commande/' . rawurlencode($info['code']));
         }
 
         $_SESSION['flash'] = 'Livrable envoyé. La commande est marquée « livrée ».';
