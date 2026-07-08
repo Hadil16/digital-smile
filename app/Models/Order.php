@@ -123,6 +123,32 @@ class Order extends Model
     }
 
     /**
+     * Nombre de commandes par statut (pour les cartes du tableau de bord).
+     * Renvoie un tableau associatif avec TOUJOURS les 6 clés attendues
+     * (à 0 si aucune commande dans ce statut). 'cancelled' est ignoré.
+     */
+    public function countByStatus(): array
+    {
+        $counts = [
+            'pending' => 0, 'approved' => 0, 'in_progress' => 0,
+            'delivered' => 0, 'completed' => 0, 'rejected' => 0,
+        ];
+        $rows = $this->db->query("SELECT status, COUNT(*) AS n FROM orders GROUP BY status")->fetchAll();
+        foreach ($rows as $r) {
+            if (array_key_exists($r['status'], $counts)) {
+                $counts[$r['status']] = (int) $r['n'];
+            }
+        }
+        return $counts;
+    }
+
+    /** Nombre total de commandes. */
+    public function countTotal(): int
+    {
+        return (int) $this->db->query("SELECT COUNT(*) FROM orders")->fetchColumn();
+    }
+
+    /**
      * Change le statut d'une commande. Liste blanche STRICTE : seuls
      * 'approved', 'rejected', 'in_progress' sont acceptés depuis l'admin.
      * Renvoie true si une ligne a bien été modifiée.

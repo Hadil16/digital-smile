@@ -4,9 +4,13 @@
  * -----------------------------------------------------------------
  * Espace administrateur (rôle 'admin') : revue des demandes —
  * approuver / refuser / affecter à un employé. Aucune requête SQL
- * ici : tout passe par les modèles Order et Employee.
+ * ici : tout passe par les modèles Order, Employee et Client.
  * -----------------------------------------------------------------
  */
+
+// Le modèle Client n'est chargé nulle part ailleurs : on l'inclut ici
+// (require_once = sans doublon si le front controller le charge un jour).
+require_once ROOT_PATH . '/app/Models/Client.php';
 
 class AdminController
 {
@@ -15,17 +19,25 @@ class AdminController
     private ?Employee   $employeeModel   = null;
     private ?User       $userModel       = null;
     private ?Department $departmentModel = null;
+    private ?Client     $clientModel     = null;
 
     private function orderM(): Order          { return $this->orderModel      ??= new Order(); }
     private function employeeM(): Employee    { return $this->employeeModel   ??= new Employee(); }
     private function userM(): User            { return $this->userModel       ??= new User(); }
     private function deptM(): Department       { return $this->departmentModel ??= new Department(); }
+    private function clientM(): Client         { return $this->clientModel     ??= new Client(); }
 
-    /** Tableau de bord : accès à la gestion des demandes + nombre en attente. */
+    /** Tableau de bord : cartes de statistiques + accès à la gestion. */
     public function dashboard(): void
     {
         require_role('admin');
-        $pendingCount = count($this->orderM()->allPending());
+
+        // Chiffres pour les cartes (comptés en direct dans la base).
+        $statusCounts   = $this->orderM()->countByStatus();     // par statut
+        $totalOrders    = $this->orderM()->countTotal();
+        $totalClients   = $this->clientM()->countTotal();
+        $totalEmployees = $this->employeeM()->countTotal();
+
         require ROOT_PATH . '/app/Views/admin/dashboard.php';
     }
 
