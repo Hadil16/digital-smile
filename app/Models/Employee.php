@@ -44,4 +44,10 @@ class Employee extends Model
         );
         return $stmt->fetchAll();
     }
+
+    /** Nombre total d'employés. */
+    public function countTotal(): int
+    {
+        return (int) $this->db->query("SELECT COUNT(*) FROM employees")->fetchColumn();
+    }
 }
