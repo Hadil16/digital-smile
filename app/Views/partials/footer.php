@@ -82,5 +82,33 @@
 })();
 </script>
 
+<!-- Bascule de thème : clic → clair/sombre, mémorisé dans localStorage.
+     (La restauration au chargement est faite tôt dans le <head> pour éviter le flash.) -->
+<script>
+(function () {
+    var root = document.documentElement;
+    var btn  = document.getElementById('themeToggle');
+
+    function apply(theme) {
+        root.setAttribute('data-theme', theme);
+        if (btn) {
+            var dark = (theme === 'dark');
+            // ☀️ si on est en sombre (clic = revenir clair), 🌙 sinon.
+            btn.querySelector('span').innerHTML = dark ? '☀️' : '🌙';
+            btn.setAttribute('aria-label', dark ? 'Passer en thème clair' : 'Passer en thème sombre');
+        }
+    }
+
+    // État courant (posé par le script du <head>, "light" par défaut).
+    apply(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+
+    if (btn) btn.addEventListener('click', function () {
+        var next = (root.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+        try { localStorage.setItem('ds-theme', next); } catch (e) {}
+        apply(next);
+    });
+})();
+</script>
+
 </body>
 </html>

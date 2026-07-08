@@ -12,6 +12,16 @@ $notifCount = !empty($_SESSION['user_id'])
     <title>Digital Smile — Agence de branding à Alger</title>
     <meta name="description" content="Digital Smile, agence de branding et de communication à Alger : identité visuelle, impression, web, QR codes et production audiovisuelle.">
 
+    <!-- Thème : restaure le choix (clair/sombre) AVANT le rendu, pour éviter tout flash. -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('ds-theme');
+                if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Polices -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,6 +62,11 @@ $notifCount = !empty($_SESSION['user_id'])
         <a href="#chiffres">Chiffres</a>
         <a href="#contact">Contact</a>
     </div>
+    <!-- Bascule de thème clair / sombre (icône mise à jour par le script du footer). -->
+    <button type="button" id="themeToggle" class="nav__theme"
+            aria-label="Basculer entre thème clair et sombre" title="Thème clair / sombre">
+        <span aria-hidden="true">&#127769;</span>
+    </button>
     <?php if (!empty($_SESSION['user_id'])): ?>
         <!-- Connecté : cloche de notifications avec pastille du nombre non lu. -->
         <a href="<?= e(BASE_URL) ?>/notifications" class="nav__bell"

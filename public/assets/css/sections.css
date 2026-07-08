@@ -8,7 +8,7 @@
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background: var(--white);
+    background: var(--color-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,7 +27,7 @@
     font-size: clamp(42px, 9vw, 130px);
     font-weight: 800;
     letter-spacing: -3px;
-    color: var(--black);
+    color: var(--color-text);
     opacity: 0;                   /* animé en JS */
 }
 .intro__word .accent { color: var(--green); }
@@ -129,14 +129,14 @@
 
 /* ============ ④ SERVICES — liste numérotée + image au survol ⭐ ===== */
 .services { padding: clamp(70px, 10vw, 130px) 0; position: relative; }
-.services__list { border-top: 1px solid rgba(20,20,43,.12); }
+.services__list { border-top: 1px solid var(--color-border); }
 .service {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 20px;
     padding: clamp(22px, 3.5vw, 40px) var(--pad);
-    border-bottom: 1px solid rgba(20,20,43,.12);
+    border-bottom: 1px solid var(--color-border);
     cursor: pointer;
     transition: background .3s ease;
     position: relative;
