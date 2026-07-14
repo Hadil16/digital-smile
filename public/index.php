@@ -77,6 +77,7 @@ $router->add('client/nouvelle-demande', fn() => $_SERVER['REQUEST_METHOD'] === '
 
 // Revue des demandes par l'admin. Les 3 mutations exigent un POST + jeton CSRF
 // (vérifié dans le contrôleur) ; la liste est en GET.
+$router->add('admin/clients',              [new AdminController(), 'clients']);
 $router->add('admin/commandes',           [new AdminController(), 'orders']);
 $router->add('admin/commandes/approuver',  [new AdminController(), 'approveOrder']);
 $router->add('admin/commandes/refuser',    [new AdminController(), 'rejectOrder']);

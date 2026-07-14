@@ -25,7 +25,7 @@ $admInit   = strtoupper(mb_substr($admParts[0] ?? 'A', 0, 1, 'UTF-8')
 $admNav = [
     'dashboard' => ['Tableau de bord', BASE_URL . '/admin',           '📊'],
     'commandes' => ['Commandes',       BASE_URL . '/admin/commandes',  '📋'],
-    'clients'   => ['Clients',         '#',                            '👥'],
+    'clients'   => ['Clients',         BASE_URL . '/admin/clients',    '👥'],
     'employes'  => ['Employés',        BASE_URL . '/admin/employes',   '🧑‍💼'],
     'factures'  => ['Factures',        BASE_URL . '/admin/factures',   '🧾'],
 ];
@@ -101,6 +101,7 @@ $pageSubtitle = $pageSubtitle ?? '';
         font-size: 17px; background: var(--color-surface); border: 1px solid var(--color-border); }
     .adm-kpi__num { font-family: 'Baloo 2', 'Poppins', system-ui, sans-serif; font-weight: 800; font-size: 28px;
         line-height: 1; color: var(--color-text); margin: 14px 0 0; }
+    .adm-kpi__num--sm { font-size: 20px; word-break: break-word; }   /* valeurs longues (montants) */
     .adm-kpi__cap { font-size: 12px; color: var(--color-muted); margin: 6px 0 0; }
 
     /* --- Cartes (graphiques + panneaux) --- */

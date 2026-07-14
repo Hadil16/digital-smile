@@ -22,10 +22,32 @@ $adminActive  = 'factures';
 $pageTitle    = 'Facturation';
 $pageSubtitle = 'Générez les factures et suivez les paiements';
 require ROOT_PATH . '/app/Views/partials/admin-sidebar.php';
+
+// Cartes KPI (agrégation d'affichage sur les données déjà chargées).
+$totalBilled = array_sum(array_map(fn($i) => (float) $i['amount_ttc'], $invoices));
+$invKpis = [
+    ['Factures émises', (string) count($invoices),  '🧾', 'violet', 'Total émis'],
+    ['Total facturé',   $fmtMoney($totalBilled),    '💰', 'green',  'Montant TTC cumulé'],
+    ['À facturer',      (string) count($toInvoice), '📦', 'amber',  'Commandes terminées'],
+];
 ?>
         <?php if (!empty($flash)): ?>
             <p class="adm-flash" role="status"><?= e($flash) ?></p>
         <?php endif; ?>
+
+        <!-- Cartes KPI (données réelles) -->
+        <section class="adm__kpis" aria-label="Indicateurs facturation">
+            <?php foreach ($invKpis as [$lbl, $val, $ico, $tone, $cap]): ?>
+                <article class="adm-kpi adm-kpi--<?= $tone ?>">
+                    <div class="adm-kpi__top">
+                        <span class="adm-kpi__label"><?= e($lbl) ?></span>
+                        <span class="adm-kpi__ico" aria-hidden="true"><?= $ico ?></span>
+                    </div>
+                    <p class="adm-kpi__num adm-kpi__num--sm"><?= e($val) ?></p>
+                    <p class="adm-kpi__cap"><?= e($cap) ?></p>
+                </article>
+            <?php endforeach; ?>
+        </section>
 
         <!-- ============ Commandes terminées à facturer ============ -->
         <h2 class="adm-section">Commandes à facturer</h2>
