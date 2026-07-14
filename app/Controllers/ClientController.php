@@ -27,6 +27,14 @@ class ClientController
         require ROOT_PATH . '/app/Views/client/dashboard.php';
     }
 
+    /** Liste des factures du client (les siennes uniquement). */
+    public function factures(): void
+    {
+        require_role('client');
+        $invoices = $this->invoices()->allForClient((int) $_SESSION['user_id']);
+        require ROOT_PATH . '/app/Views/client/invoices.php';
+    }
+
     /** Affiche le formulaire de nouvelle demande (services au choix). */
     public function showNewOrder(): void
     {
