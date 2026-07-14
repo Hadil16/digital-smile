@@ -22,8 +22,18 @@ class EmployeeController
         'zip'  => ['application/zip', 'application/x-zip-compressed'],
     ];
 
-    private ?Project $projectModel = null;
-    private function projects(): Project { return $this->projectModel ??= new Project(); }
+    // Photo de profil : images seules, 2 Mo max (même contrôle MIME réel).
+    private const PHOTO_MAX     = 2 * 1024 * 1024; // 2 Mo
+    private const PHOTO_ALLOWED = [
+        'jpg'  => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'png'  => ['image/png'],
+    ];
+
+    private ?Project  $projectModel  = null;
+    private ?Employee $employeeModel = null;
+    private function projects(): Project   { return $this->projectModel  ??= new Project(); }
+    private function employees(): Employee { return $this->employeeModel ??= new Employee(); }
 
     /** Id de la fiche employé de l'utilisateur connecté (0 si aucune). */
     private function currentEmployeeId(): int
@@ -39,16 +49,139 @@ class EmployeeController
         require ROOT_PATH . '/app/Views/employee/dashboard.php';
     }
 
-    /** Liste des projets assignés à l'employé. */
+    /** Liste des projets assignés à l'employé + entête de profil + KPI. */
     public function tasks(): void
     {
         require_role('employee');
-        $projects = $this->projects()->forEmployee($this->currentEmployeeId());
+        $employeeId = $this->currentEmployeeId();
+        $projects   = $this->projects()->forEmployee($employeeId);
+        $profile    = $this->employees()->profileForUser((int) $_SESSION['user_id']);
+        $stats      = $this->projects()->statsForEmployee($employeeId);
 
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
 
         require ROOT_PATH . '/app/Views/employee/tasks.php';
+    }
+
+    /** Mon profil : formulaire (photo, expérience, bio). */
+    public function profile(): void
+    {
+        require_role('employee');
+        $profile = $this->employees()->profileForUser((int) $_SESSION['user_id']);
+        $canEdit = $this->employees()->hasProfileColumns();
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+        $error = null;
+        require ROOT_PATH . '/app/Views/employee/profile.php';
+    }
+
+    /** Enregistre le profil (CSRF + fiche propre + validation). */
+    public function saveProfile(): void
+    {
+        require_role('employee');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/employe/profil');
+        }
+
+        // Fiche de l'employé connecté (contrôle de propriété : par son user_id).
+        $profile = $this->employees()->profileForUser((int) $_SESSION['user_id']);
+        if ($profile === null) {
+            $_SESSION['flash'] = 'Fiche employé introuvable.';
+            redirect('/employe/profil');
+        }
+        $canEdit = $this->employees()->hasProfileColumns();
+        if (!$canEdit) {
+            // Colonnes absentes : on l'explique au lieu de planter (dégradation propre).
+            $_SESSION['flash'] = 'Profil indisponible : la migration base de données n\'a pas encore été appliquée.';
+            redirect('/employe/profil');
+        }
+
+        // Validation des champs texte.
+        $expRaw = trim((string) ($_POST['experience_years'] ?? ''));
+        $exp    = ($expRaw === '') ? null : (int) $expRaw;
+        $bio    = trim((string) ($_POST['bio'] ?? ''));
+
+        $error = null;
+        if ($exp !== null && ($exp < 0 || $exp > 50)) {
+            $error = 'L\'expérience doit être comprise entre 0 et 50 ans.';
+        } elseif (mb_strlen($bio) > 500) {
+            $error = 'La biographie ne doit pas dépasser 500 caractères.';
+        }
+
+        // Photo (facultative) : même sécurité que les livrables, images seules.
+        $photoStored = null; // reste null si aucune nouvelle photo
+        if ($error === null && !empty($_FILES['photo']) && ($_FILES['photo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $photoStored = $this->handlePhotoUpload($_FILES['photo'], $error);
+        }
+
+        if ($error !== null) {
+            // Ré-affiche le formulaire avec le message (valeurs saisies conservées).
+            $flash = null;
+            require ROOT_PATH . '/app/Views/employee/profile.php';
+            return;
+        }
+
+        // Mise à jour : la photo n'est incluse que si une nouvelle a été déposée.
+        $data = ['experience_years' => $exp, 'bio' => ($bio === '' ? null : $bio)];
+        if ($photoStored !== null) {
+            $data['photo'] = $photoStored;
+        }
+        $this->employees()->updateProfile((int) $profile['id'], $data);
+
+        $_SESSION['flash'] = 'Profil mis à jour.';
+        redirect('/employe/profil');
+    }
+
+    /** Ma bibliothèque : les livrables déposés par l'employé. */
+    public function library(): void
+    {
+        require_role('employee');
+        $deliverables = $this->projects()->deliverablesForEmployee($this->currentEmployeeId());
+        require ROOT_PATH . '/app/Views/employee/library.php';
+    }
+
+    /**
+     * Traite l'upload de la photo de profil (image seule, 2 Mo, MIME réel via
+     * finfo, nom de stockage aléatoire). Renvoie le chemin stocké
+     * (ex : 'uploads/ab..cd.jpg') ou null en cas d'erreur (message dans $error).
+     */
+    private function handlePhotoUpload(array $file, ?string &$error): ?string
+    {
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $error = 'Photo non reçue (ou trop volumineuse).';
+            return null;
+        }
+        if ($file['size'] <= 0 || $file['size'] > self::PHOTO_MAX) {
+            $error = 'Photo trop volumineuse (2 Mo maximum).';
+            return null;
+        }
+
+        // Extension ET type MIME réel doivent concorder (jpg/png uniquement).
+        $ext   = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!isset(self::PHOTO_ALLOWED[$ext]) || !in_array($mime, self::PHOTO_ALLOWED[$ext], true)) {
+            $error = 'Photo refusée. Formats acceptés : JPG, PNG.';
+            return null;
+        }
+
+        // Nom de stockage aléatoire, extension normalisée (jamais le nom d'origine).
+        $ext    = ($ext === 'jpeg') ? 'jpg' : $ext;
+        $stored = bin2hex(random_bytes(16)) . '.' . $ext;
+
+        if (!is_dir(UPLOAD_PATH)) {
+            @mkdir(UPLOAD_PATH, 0755, true);
+        }
+        if (!move_uploaded_file($file['tmp_name'], UPLOAD_PATH . '/' . $stored)) {
+            $error = 'Échec de l\'enregistrement de la photo.';
+            return null;
+        }
+        return 'uploads/' . $stored;
     }
 
     /** Met à jour la progression (0..100) d'une tâche de l'employé. */

@@ -93,6 +93,13 @@ $router->add('employe/taches',              [new EmployeeController(), 'tasks'])
 $router->add('employe/taches/progression',  [new EmployeeController(), 'updateProgress']);
 $router->add('employe/taches/livrer',       [new EmployeeController(), 'uploadFile']);
 
+// Profil employé : GET = formulaire, POST = enregistrement (CSRF vérifié).
+$router->add('employe/profil', fn() => $_SERVER['REQUEST_METHOD'] === 'POST'
+    ? (new EmployeeController())->saveProfile()
+    : (new EmployeeController())->profile());
+// Bibliothèque de l'employé : ses livrables déposés (GET).
+$router->add('employe/bibliotheque',        [new EmployeeController(), 'library']);
+
 // Facturation admin : liste (GET) + génération (POST + CSRF). Le détail d'une
 // facture (numéro variable) est reconnu plus bas, avant le dispatch.
 $router->add('admin/factures',         [new AdminController(), 'invoices']);
