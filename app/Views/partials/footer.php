@@ -1,24 +1,42 @@
-<?php /** app/Views/partials/footer.php — bas de page commun : footer + scripts (GSAP CDN, animations). */ ?><footer class="footer">
-    <div class="footer__grid">
-        <div>
-            <p><strong>Digital Smile</strong></p>
-            <p>Agence de branding &amp; communication</p>
-            <p>Digital like never before.</p>
+<?php /** app/Views/partials/footer.php — bas de page commun premium (4 colonnes, tokens) + scripts. */ ?><footer class="foot">
+    <div class="foot__grid">
+        <div class="foot__brand">
+            <div class="foot__logo">
+                <img src="assets/img/logo.jpg" alt="">
+                <span>Digital Smile</span>
+            </div>
+            <p class="foot__tag">Digital Like Never Before</p>
+            <p class="foot__pitch">Agence de branding à Alger. Nous donnons vie à votre identité, du logo au digital.</p>
         </div>
-        <div>
-            <p><strong>Contact</strong></p>
-            <p><a href="tel:+213549562205">+213 (0) 549 56 22 05</a></p>
-            <p><a href="mailto:arezki69@gmail.com">arezki69@gmail.com</a></p>
+        <div class="foot__col">
+            <h4 class="foot__h">Services</h4>
+            <ul>
+                <li>Branding</li>
+                <li>Web &amp; Digital</li>
+                <li>Community</li>
+                <li>Impression</li>
+                <li>Audiovisuel</li>
+            </ul>
         </div>
-        <div>
-            <p><strong>Adresse</strong></p>
-            <p>Cité 1200 Logts, Bt S, Local N° 17</p>
-            <p>Bab Ezzouar, Alger</p>
+        <div class="foot__col">
+            <h4 class="foot__h">Agence</h4>
+            <ul>
+                <li><a href="#realisations">Réalisations</a></li>
+                <li><a href="#temoignages">Témoignages</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+        <div class="foot__col">
+            <h4 class="foot__h">Contact</h4>
+            <ul>
+                <li>Bab Ezzouar, Alger</li>
+                <li><a href="mailto:arezki69@gmail.com">arezki69@gmail.com</a></li>
+            </ul>
         </div>
     </div>
-    <div class="footer__bottom">
-        <span>© 2026 Digital Smile. Tous droits réservés.</span>
-        <span>RC 5146243 A 22</span>
+    <div class="foot__bottom">
+        <span>© 2026 Digital Smile — Tous droits réservés</span>
     </div>
 </footer>
 
