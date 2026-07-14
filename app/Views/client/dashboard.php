@@ -2,124 +2,117 @@
 /**
  * app/Views/client/dashboard.php
  * -----------------------------------------------------------------
- * Tableau de bord client : bouton "nouvelle demande" + liste de ses
- * commandes. Variables fournies par ClientController : $orders.
+ * Tableau de bord client — coquille A2 + cartes KPI + liste des
+ * commandes. Variable fournie par ClientController : $orders.
+ * PRÉSENTATION UNIQUEMENT (le nombre de factures est lu via une méthode
+ * EXISTANTE du modèle, même approche que la cloche du header).
  * -----------------------------------------------------------------
  */
 require ROOT_PATH . '/app/Views/partials/header.php';
 
-// Libellés FR des statuts (le style du badge vient de la classe .badge--<statut>).
-$statusLabels = [
-    'pending'     => 'En attente',
-    'approved'    => 'Acceptée',
-    'rejected'    => 'Refusée',
-    'in_progress' => 'En cours',
-    'delivered'   => 'Livrée',
-    'completed'   => 'Terminée',
-    'cancelled'   => 'Annulée',
+// Libellés FR + tonalité de la pastille, par statut.
+$statusMeta = [
+    'pending'     => ['En attente', 'violet'],
+    'approved'    => ['Acceptée',   'violet'],
+    'in_progress' => ['En cours',   'amber'],
+    'delivered'   => ['Livrée',     'green'],
+    'completed'   => ['Terminée',   'green'],
+    'rejected'    => ['Refusée',    'red'],
+    'cancelled'   => ['Annulée',    'muted'],
 ];
+$fmtDate = fn($d) => $d ? date('d/m/Y', strtotime($d)) : '—';
+
+// Prénom pour la salutation.
+$parts     = array_values(array_filter(preg_split('/\s+/', trim($_SESSION['name'] ?? ''))));
+$firstName = $parts[0] ?? 'client';
+
+// KPI — uniquement des données réelles.
+$inProgress = 0;
+$delivered  = 0;
+foreach ($orders as $o) {
+    if ($o['status'] === 'in_progress') { $inProgress++; }
+    if (in_array($o['status'], ['delivered', 'completed'], true)) { $delivered++; }
+}
+// Nombre de factures du client : méthode EXISTANTE du modèle (affichage seul).
+$invoiceCount = count((new Invoice())->allForClient((int) ($_SESSION['user_id'] ?? 0)));
+
+$kpis = [
+    ['En cours',  $inProgress,   '🚧', 'amber',  'Projets en cours'],
+    ['Livrées',   $delivered,    '🏁', 'green',  'Livrées et terminées'],
+    ['Factures',  $invoiceCount, '🧾', 'violet', 'Factures émises'],
+];
+
+// Coquille client commune (sidebar + entête).
+$clientActive = 'commandes';
+$pageTitle    = 'Bonjour, ' . $firstName . ' 👋';
+$pageSubtitle = 'Suivez vos demandes et vos livrables';
+require ROOT_PATH . '/app/Views/partials/client-sidebar.php';
 ?>
-<style>
-    /* Styles auto-portés du tableau de bord (couleurs de marque). */
-    .dash { --violet: #4A3F9E; --lime: #8BC63F;
-        min-height: 70vh; padding: 96px 24px 64px; font-family: 'Inter', system-ui, sans-serif; }
-    .intro { display: none !important; } /* pas d'intro flash hors accueil */
-    .dash__wrap { max-width: 940px; margin: 0 auto; }
-    .dash__head { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-        flex-wrap: wrap; margin: 0 0 32px; }
-    .dash__role { display: inline-block; background: var(--violet); color: #fff; font-size: 13px;
-        font-weight: 600; padding: 6px 14px; border-radius: 999px; margin: 0 0 10px; }
-    .dash__title { font-family: 'Poppins', system-ui, sans-serif; font-weight: 800;
-        font-size: clamp(24px, 4vw, 34px); color: var(--violet); margin: 0; }
-    .dash__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-        flex-wrap: wrap; margin: 0 0 18px; }
-    .dash__h2 { font-family: 'Poppins', system-ui, sans-serif; font-size: 20px; color: #222; margin: 0; }
-    .btn { display: inline-block; text-decoration: none; font-weight: 600; font-size: 14px;
-        padding: 11px 22px; border-radius: 999px; transition: background .2s, color .2s; }
-    .btn--primary { background: var(--violet); color: #fff; }
-    .btn--primary:hover { background: var(--lime); }
-    .btn--ghost { border: 1px solid #d5d5db; color: #444; }
-    .btn--ghost:hover { border-color: var(--violet); color: var(--violet); }
-    .dash__empty { background: #faf9ff; border: 1px dashed #d7d2f0; color: #666;
-        border-radius: 14px; padding: 40px; text-align: center; font-size: 15px; }
-    .table__scroll { overflow-x: auto; border: 1px solid #eee; border-radius: 14px; }
-    .table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
-    .table th, .table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
-    .table th { background: #faf9ff; color: #555; font-weight: 600; white-space: nowrap; }
-    .table tbody tr:hover { background: #faf9ff; }
-    .table tr:last-child td { border-bottom: 0; }
-    .table td:first-child { font-weight: 600; color: var(--violet); white-space: nowrap; }
-    .code-link { color: inherit; text-decoration: none; }
-    .code-link:hover { text-decoration: underline; }
-    .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
-    .badge--pending     { background: #fff7e6; color: #b8860b; }
-    .badge--approved    { background: #ece9fb; color: #4A3F9E; }
-    .badge--in_progress { background: #e6f0fc; color: #1e6fd9; }
-    .badge--delivered   { background: #e3f7f4; color: #0d9488; }
-    .badge--completed   { background: #eef7e0; color: #3B6D11; }
-    .badge--rejected    { background: #fdecec; color: #b3261e; }
-    .badge--cancelled   { background: #eee; color: #666; }
-</style>
+        <!-- Cartes KPI (données réelles uniquement) -->
+        <section class="adm__kpis" aria-label="Indicateurs de mes commandes">
+            <?php foreach ($kpis as [$lbl, $val, $ico, $tone, $cap]): ?>
+                <article class="adm-kpi adm-kpi--<?= $tone ?>">
+                    <div class="adm-kpi__top">
+                        <span class="adm-kpi__label"><?= e($lbl) ?></span>
+                        <span class="adm-kpi__ico" aria-hidden="true"><?= $ico ?></span>
+                    </div>
+                    <p class="adm-kpi__num"><?= (int) $val ?></p>
+                    <p class="adm-kpi__cap"><?= e($cap) ?></p>
+                </article>
+            <?php endforeach; ?>
+        </section>
 
-<main class="dash">
-    <div class="dash__wrap">
-        <header class="dash__head">
-            <div>
-                <p class="dash__role">Espace client</p>
-                <h1 class="dash__title">Bonjour, <?= e($_SESSION['name'] ?? '') ?> 👋</h1>
-            </div>
-            <a class="btn btn--ghost" href="<?= e(BASE_URL) ?>/logout">Déconnexion</a>
-        </header>
-
-        <div class="dash__bar">
-            <h2 class="dash__h2">Mes demandes</h2>
-            <a class="btn btn--primary" href="<?= e(BASE_URL) ?>/client/nouvelle-demande">+ Nouvelle demande</a>
+        <!-- En-tête de section + CTA nouvelle demande -->
+        <div class="cli-bar">
+            <h2 class="adm-section" style="margin:0">Mes demandes</h2>
+            <a class="adm-btn adm-btn--primary" href="<?= e(BASE_URL) ?>/client/nouvelle-demande">+ Nouvelle demande</a>
         </div>
 
         <?php if (empty($orders)): ?>
-            <p class="dash__empty">Aucune demande pour le moment.</p>
+            <div class="adm-empty">
+                <p style="margin:0 0 16px">Aucune demande pour le moment.</p>
+                <a class="adm-btn adm-btn--primary" href="<?= e(BASE_URL) ?>/client/nouvelle-demande">Créer ma première demande</a>
+            </div>
         <?php else: ?>
-            <div class="table__scroll">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Numéro</th>
-                            <th>Service</th>
-                            <th>Statut</th>
-                            <th>Budget</th>
-                            <th>Échéance</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($orders as $o): ?>
+            <div class="adm-card">
+                <div class="adm-table__scroll">
+                    <table class="adm-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <a class="code-link"
-                                       href="<?= e(BASE_URL) ?>/client/commande/<?= e(rawurlencode($o['code'])) ?>">
-                                        <?= e($o['code']) ?>
-                                    </a>
-                                </td>
-                                <td><?= e($o['service_name']) ?></td>
-                                <td>
-                                    <span class="badge badge--<?= e($o['status']) ?>">
-                                        <?= e($statusLabels[$o['status']] ?? $o['status']) ?>
-                                    </span>
-                                </td>
-                                <td><?= $o['budget'] !== null
-                                        ? e(number_format((float) $o['budget'], 0, ',', ' ')) . ' DZD'
-                                        : '—' ?></td>
-                                <td><?= $o['deadline']
-                                        ? e(date('d/m/Y', strtotime($o['deadline'])))
-                                        : '—' ?></td>
-                                <td><?= e(date('d/m/Y', strtotime($o['created_at']))) ?></td>
+                                <th>Numéro</th>
+                                <th>Service</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th><span class="sr-only">Actions</span></th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($orders as $o): ?>
+                                <?php [$lbl, $tone] = $statusMeta[$o['status']] ?? [$o['status'], 'muted']; ?>
+                                <tr>
+                                    <td class="adm-table__num"><?= e($o['code']) ?></td>
+                                    <td><?= e($o['service_name']) ?></td>
+                                    <td><span class="adm-pill adm-pill--<?= $tone ?>"><?= e($lbl) ?></span></td>
+                                    <td><?= e($fmtDate($o['created_at'])) ?></td>
+                                    <td>
+                                        <a class="adm-btn adm-btn--ghost"
+                                           href="<?= e(BASE_URL) ?>/client/commande/<?= e(rawurlencode($o['code'])) ?>"
+                                           aria-label="Voir la commande <?= e($o['code']) ?>">Voir</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         <?php endif; ?>
-    </div>
-</main>
+    </main>
+</div>
+
+<style>
+    /* Barre en-tête de section + CTA (auto-portée). */
+    .cli-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 30px 0 14px; }
+    .cli-bar .adm-section { margin: 0; }
+</style>
 
 <?php require ROOT_PATH . '/app/Views/partials/footer.php'; ?>

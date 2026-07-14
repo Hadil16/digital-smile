@@ -75,6 +75,9 @@ $router->add('client/nouvelle-demande', fn() => $_SERVER['REQUEST_METHOD'] === '
     ? (new ClientController())->createOrder()
     : (new ClientController())->showNewOrder());
 
+// Factures du client : liste de ses propres factures (GET).
+$router->add('client/factures', [new ClientController(), 'factures']);
+
 // Revue des demandes par l'admin. Les 3 mutations exigent un POST + jeton CSRF
 // (vérifié dans le contrôleur) ; la liste est en GET.
 $router->add('admin/clients',              [new AdminController(), 'clients']);

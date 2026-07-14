@@ -107,6 +107,25 @@ class Invoice extends Model
         return (int) $this->db->query("SELECT COUNT(*) FROM invoices")->fetchColumn();
     }
 
+    /**
+     * Factures d'UN client (numéro, commande, TTC, statut, date), les plus
+     * récentes d'abord. Propriété garantie DANS la requête via clients.user_id :
+     * un client ne voit jamais que ses propres factures.
+     */
+    public function allForClient(int $clientUserId): array
+    {
+        $sql = "SELECT i.code, i.amount_ttc, i.status, i.issued_at,
+                       o.code AS order_code
+                FROM invoices i
+                JOIN orders  o ON o.id = i.order_id
+                JOIN clients c ON c.id = o.client_id
+                WHERE c.user_id = :uid
+                ORDER BY i.issued_at DESC, i.id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':uid' => $clientUserId]);
+        return $stmt->fetchAll();
+    }
+
     /** Numéro de la facture d'une commande (par order_id), ou null si aucune. */
     public function numberForOrder(int $orderId): ?string
     {
