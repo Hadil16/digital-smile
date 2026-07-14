@@ -1,40 +1,38 @@
 <?php
 /**
- * app/Views/partials/admin-sidebar.php
+ * app/Views/partials/employee-sidebar.php
  * -----------------------------------------------------------------
- * Coquille (shell) commune des pages d'administration : barre latérale
- * fixe + zone de contenu + entête. À inclure APRÈS header.php.
+ * Coquille (shell) commune de l'espace employé : barre latérale fixe
+ * + zone de contenu + entête. Calquée sur admin-sidebar.php. À inclure
+ * APRÈS header.php.
  *
  * La page appelante définit AVANT l'inclusion :
- *   $adminActive   → clé du lien actif ('dashboard'|'commandes'|'clients'|'employes'|'factures')
- *   $pageTitle     → titre affiché dans l'entête
- *   $pageSubtitle  → sous-titre (optionnel)
+ *   $employeeActive → clé du lien actif ('taches'|'profil'|'bibliotheque')
+ *   $pageTitle      → titre affiché dans l'entête
+ *   $pageSubtitle   → sous-titre (optionnel)
  *
  * Après le contenu, la page ferme la coquille : </main></div> puis footer.php.
  * PRÉSENTATION UNIQUEMENT — aucune logique métier ici.
  * -----------------------------------------------------------------
  */
 
-// Prénom + initiales de l'utilisateur (pour l'avatar de l'entête).
-$admName   = $_SESSION['name'] ?? '';
-$admParts  = array_values(array_filter(preg_split('/\s+/', trim($admName))));
-$admInit   = strtoupper(mb_substr($admParts[0] ?? 'A', 0, 1, 'UTF-8')
-           . (count($admParts) > 1 ? mb_substr((string) end($admParts), 0, 1, 'UTF-8') : ''));
+// Initiales de l'utilisateur (pour l'avatar de l'entête).
+$empName  = $_SESSION['name'] ?? '';
+$empParts = array_values(array_filter(preg_split('/\s+/', trim($empName))));
+$empInit  = strtoupper(mb_substr($empParts[0] ?? 'E', 0, 1, 'UTF-8')
+          . (count($empParts) > 1 ? mb_substr((string) end($empParts), 0, 1, 'UTF-8') : ''));
 
-// Liens de la barre latérale (Clients : page à venir → ancre inerte).
-$admNav = [
-    'dashboard' => ['Tableau de bord', BASE_URL . '/admin',           '📊'],
-    'commandes' => ['Commandes',       BASE_URL . '/admin/commandes',  '📋'],
-    'clients'   => ['Clients',         BASE_URL . '/admin/clients',    '👥'],
-    'employes'  => ['Employés',        BASE_URL . '/admin/employes',   '🧑‍💼'],
-    'factures'  => ['Factures',        BASE_URL . '/admin/factures',   '🧾'],
+// Liens de la barre latérale de l'employé.
+$empNav = [
+    'taches'       => ['Mes tâches',      BASE_URL . '/employe/taches',       '📋'],
+    'profil'       => ['Mon profil',      BASE_URL . '/employe/profil',       '👤'],
+    'bibliotheque' => ['Ma bibliothèque', BASE_URL . '/employe/bibliotheque', '📚'],
 ];
-$adminActive  = $adminActive  ?? 'dashboard';
-$pageTitle    = $pageTitle    ?? 'Administration';
-$pageSubtitle = $pageSubtitle ?? '';
+$employeeActive = $employeeActive ?? 'taches';
+$pageTitle      = $pageTitle      ?? 'Espace employé';
+$pageSubtitle   = $pageSubtitle   ?? '';
 
-// Styles communs des espaces (admin + employé) — source unique, chargée
-// uniquement sur les pages d'espace (donc pas de pollution du site public).
+// Styles communs des espaces (mêmes .adm* que l'admin) — source unique.
 require ROOT_PATH . '/app/Views/partials/workspace-styles.php';
 ?>
 
@@ -45,9 +43,9 @@ require ROOT_PATH . '/app/Views/partials/workspace-styles.php';
             <img src="assets/img/logo.jpg" alt="">
             <span>Digital Smile</span>
         </div>
-        <nav class="adm__nav" aria-label="Navigation admin">
-            <?php foreach ($admNav as $key => [$label, $href, $ico]): ?>
-                <?php $active = ($key === $adminActive); ?>
+        <nav class="adm__nav" aria-label="Navigation employé">
+            <?php foreach ($empNav as $key => [$label, $href, $ico]): ?>
+                <?php $active = ($key === $employeeActive); ?>
                 <a class="adm__link<?= $active ? ' is-active' : '' ?>" href="<?= e($href) ?>"<?= $active ? ' aria-current="page"' : '' ?>>
                     <span class="adm__link-ico" aria-hidden="true"><?= $ico ?></span><?= e($label) ?>
                 </a>
@@ -75,7 +73,7 @@ require ROOT_PATH . '/app/Views/partials/workspace-styles.php';
                         <span class="adm__bell-badge"><?= $notifCount > 99 ? '99+' : (int) $notifCount ?></span>
                     <?php endif; ?>
                 </a>
-                <span class="adm__avatar" aria-hidden="true"><?= e($admInit) ?></span>
+                <span class="adm__avatar" aria-hidden="true"><?= e($empInit) ?></span>
             </div>
         </header>
         <!-- Le contenu de la page suit, puis fermeture </main></div> + footer. -->

@@ -129,6 +129,71 @@ class Project extends Model
         }
     }
 
+    /**
+     * Statistiques de travail d'un employé (entête de profil + cartes KPI).
+     * Toutes les valeurs sont RÉELLES, dérivées des commandes liées à ses
+     * projets et des livrables déposés :
+     *   - delivered            : projets livrés (commande 'delivered' ou 'completed')
+     *   - active               : projets en cours (commande 'in_progress')
+     *   - overdue              : projets en retard (échéance passée, non livrés)
+     *   - has_deadline         : au moins un projet actif possède une échéance
+     *   - delivered_this_month : livrables déposés depuis le 1er du mois (date réelle)
+     */
+    public function statsForEmployee(int $employeeId): array
+    {
+        $sql = "SELECT
+                  SUM(CASE WHEN o.status IN ('delivered','completed') THEN 1 ELSE 0 END) AS delivered,
+                  SUM(CASE WHEN o.status = 'in_progress' THEN 1 ELSE 0 END)              AS active,
+                  SUM(CASE WHEN o.deadline IS NOT NULL AND o.deadline < CURDATE()
+                            AND o.status NOT IN ('delivered','completed','cancelled','rejected')
+                           THEN 1 ELSE 0 END)                                            AS overdue,
+                  SUM(CASE WHEN o.deadline IS NOT NULL
+                            AND o.status NOT IN ('delivered','completed','cancelled','rejected')
+                           THEN 1 ELSE 0 END)                                            AS active_with_deadline
+                FROM projects p
+                JOIN orders o ON o.id = p.order_id
+                WHERE p.employee_id = :emp";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':emp' => $employeeId]);
+        $row = $stmt->fetch() ?: [];
+
+        // Livrables déposés ce mois-ci (date réelle du fichier, pas de statut ambigu).
+        $sqlM = "SELECT COUNT(*)
+                 FROM files f
+                 JOIN projects p ON p.id = f.project_id
+                 WHERE p.employee_id = :emp AND f.kind = 'deliverable'
+                   AND f.created_at >= :since";
+        $stmtM = $this->db->prepare($sqlM);
+        $stmtM->execute([':emp' => $employeeId, ':since' => date('Y-m-01 00:00:00')]);
+
+        return [
+            'delivered'            => (int) ($row['delivered'] ?? 0),
+            'active'               => (int) ($row['active'] ?? 0),
+            'overdue'              => (int) ($row['overdue'] ?? 0),
+            'has_deadline'         => ((int) ($row['active_with_deadline'] ?? 0)) > 0,
+            'delivered_this_month' => (int) $stmtM->fetchColumn(),
+        ];
+    }
+
+    /**
+     * Livrables déposés par l'employé (sa bibliothèque), les plus récents
+     * d'abord. Renvoie nom d'origine, chemin stocké, taille, date + n° et
+     * nom du projet/commande associés.
+     */
+    public function deliverablesForEmployee(int $employeeId): array
+    {
+        $sql = "SELECT f.original_name, f.stored_path, f.size_bytes, f.created_at,
+                       o.code AS order_number, o.project_name
+                FROM files f
+                JOIN projects p ON p.id = f.project_id
+                JOIN orders   o ON o.id = p.order_id
+                WHERE p.employee_id = :emp AND f.kind = 'deliverable'
+                ORDER BY f.created_at DESC, f.id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':emp' => $employeeId]);
+        return $stmt->fetchAll();
+    }
+
     /** Renvoie l'id de la fiche employé d'un utilisateur, ou null si absent. */
     public function employeeIdForUser(int $userId): ?int
     {
