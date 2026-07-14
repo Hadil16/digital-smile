@@ -34,12 +34,18 @@ class Employee extends Model
      */
     public function allWithDetails(): array
     {
+        // active_projects : commandes de l'employé actuellement 'in_progress'
+        // (via la table projects). LEFT JOIN pour garder les employés sans projet.
         $stmt = $this->db->query(
-            "SELECT u.full_name, u.email, d.name AS department_name
+            "SELECT u.full_name, u.email, d.name AS department_name,
+                    COUNT(DISTINCT CASE WHEN o.status = 'in_progress' THEN o.id END) AS active_projects
              FROM employees e
-             JOIN users u       ON u.id = e.user_id
-             JOIN departments d ON d.id = e.department_id
+             JOIN users u        ON u.id = e.user_id
+             JOIN departments d  ON d.id = e.department_id
+             LEFT JOIN projects p ON p.employee_id = e.id
+             LEFT JOIN orders o   ON o.id = p.order_id
              WHERE u.deleted_at IS NULL
+             GROUP BY e.id, u.full_name, u.email, d.name
              ORDER BY u.full_name ASC"
         );
         return $stmt->fetchAll();

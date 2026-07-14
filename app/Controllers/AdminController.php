@@ -48,6 +48,14 @@ class AdminController
         require ROOT_PATH . '/app/Views/admin/dashboard.php';
     }
 
+    /** Liste des clients + statistiques (page d'administration). */
+    public function clients(): void
+    {
+        require_role('admin');
+        $clients = $this->clientM()->allWithStats();
+        require ROOT_PATH . '/app/Views/admin/clients.php';
+    }
+
     /** Liste de revue : demandes en attente + vue d'ensemble + employés. */
     public function orders(): void
     {
@@ -56,6 +64,7 @@ class AdminController
         $approvedUnassigned = $this->orderM()->allApprovedUnassigned(); // acceptées, sans affectation
         $allOrders          = $this->orderM()->allWithStatus();
         $employees          = $this->employeeM()->allActive();
+        $statusCounts       = $this->orderM()->countByStatus();          // cartes KPI (par statut)
 
         // Message éphémère (flash) posé par une action précédente.
         $flash = $_SESSION['flash'] ?? null;
@@ -193,8 +202,9 @@ class AdminController
     public function employees(): void
     {
         require_role('admin');
-        $employees   = $this->employeeM()->allWithDetails();
-        $departments = $this->deptM()->allActive();
+        $employees    = $this->employeeM()->allWithDetails();
+        $departments  = $this->deptM()->allActive();
+        $statusCounts = $this->orderM()->countByStatus();   // cartes KPI (projets en cours / livrés)
 
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
@@ -212,6 +222,7 @@ class AdminController
         // Données pour valider ET ré-afficher la page en cas d'erreur.
         $departments  = $this->deptM()->allActive();
         $employees    = $this->employeeM()->allWithDetails();
+        $statusCounts = $this->orderM()->countByStatus();   // cartes KPI (si ré-affichage)
         $validDeptIds = array_map('intval', array_column($departments, 'id'));
         $flash        = null;
 
