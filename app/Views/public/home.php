@@ -186,7 +186,7 @@ require __DIR__ . '/../partials/header.php';
 </section>
 
 <!-- ============ ⑩b TÉMOIGNAGES — cartes citations (réf. A2) ============ -->
-<section class="testi">
+<section class="testi" id="temoignages">
     <div class="testi__head">
         <p class="testi__label reveal">Ils en parlent —</p>
         <h2 class="testi__title reveal">Témoignages</h2>
@@ -213,6 +213,52 @@ require __DIR__ . '/../partials/header.php';
         <?php endforeach; ?>
     </div>
 </section>
+
+<!-- ============ ⑩c FAQ — accordéon (réf. A2) ============ -->
+<section class="faq" id="faq">
+    <div class="faq__head">
+        <p class="faq__label reveal">FAQ —</p>
+        <h2 class="faq__title reveal">Questions fréquentes</h2>
+    </div>
+    <div class="faq__list">
+        <?php
+        $faqs = [
+            ['Combien coûte un projet de branding ?', 'Chaque projet est sur-mesure. Après un premier échange, nous vous envoyons un devis détaillé sous 48h.'],
+            ['Quels sont vos délais ?', 'Un logo prend 5 à 10 jours, une identité complète 2 à 4 semaines, selon vos retours.'],
+            ['Travaillez-vous hors d\'Alger ?', 'Oui, nous accompagnons des clients dans toute l\'Algérie, à distance ou sur site.'],
+            ['Puis-je suivre l\'avancement de mon projet ?', 'Bien sûr. Via votre espace client, vous suivez chaque étape et validez les livrables en ligne.'],
+            ['Proposez-vous l\'impression ?', 'Oui : cartes, flyers, bâches et signalétique grand format.'],
+        ];
+        foreach ($faqs as $i => [$q, $a]):
+            $qid = 'faq-q-' . $i; $aid = 'faq-a-' . $i;
+            $delay = number_format($i * 0.05, 2, '.', '');
+        ?>
+            <div class="faq__item reveal" style="transition-delay: <?= $delay ?>s">
+                <button type="button" class="faq__q" id="<?= $qid ?>"
+                        aria-expanded="false" aria-controls="<?= $aid ?>">
+                    <span><?= e($q) ?></span>
+                    <span class="faq__icon" aria-hidden="true">+</span>
+                </button>
+                <div class="faq__a" id="<?= $aid ?>" role="region" aria-labelledby="<?= $qid ?>">
+                    <p><?= e($a) ?></p>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<!-- Accordéon FAQ : ouverture/fermeture indépendante, accessible. Vanilla JS. -->
+<script>
+(function () {
+    document.querySelectorAll('.faq__q').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var item = btn.closest('.faq__item');
+            var open = item.classList.toggle('is-open');
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    });
+})();
+</script>
 
 <!-- ============ ⑪ CONTACT — Discutons + carte de contact ============ -->
 <section class="contact" id="contact">

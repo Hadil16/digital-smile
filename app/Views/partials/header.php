@@ -60,6 +60,7 @@ $notifCount = !empty($_SESSION['user_id'])
         <a href="#services">Services</a>
         <a href="#croyances">Notre vision</a>
         <a href="#chiffres">Chiffres</a>
+        <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
     </div>
     <!-- Groupe d'actions : bascule de thème + accès selon l'état de connexion. -->
