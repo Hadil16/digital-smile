@@ -67,6 +67,18 @@ require __DIR__ . '/../partials/header.php';
     </div>
 </section>
 
+<!-- ============ ④b ILS NOUS FONT CONFIANCE — barre de clients (réf. A2) ===== -->
+<section class="trustbar">
+    <p class="trustbar__label reveal">Ils nous font confiance</p>
+    <ul class="trustbar__list reveal" style="transition-delay: .08s">
+        <li>Sonatrach</li>
+        <li>Bonapro</li>
+        <li>Twinshamis</li>
+        <li>Granitex</li>
+        <li>Djezzy</li>
+    </ul>
+</section>
+
 <!-- ============ ⑥ CHIFFRES — panneau dégradé + compteurs ============ -->
 <section class="stats" id="chiffres">
     <div class="stats__panel reveal">
@@ -171,6 +183,35 @@ require __DIR__ . '/../partials/header.php';
     <h2 class="belief__line reveal">
         Qu'une marque forte ne se voit pas — elle <span class="belief__accent">se ressent.</span>
     </h2>
+</section>
+
+<!-- ============ ⑩b TÉMOIGNAGES — cartes citations (réf. A2) ============ -->
+<section class="testi">
+    <div class="testi__head">
+        <p class="testi__label reveal">Ils en parlent —</p>
+        <h2 class="testi__title reveal">Témoignages</h2>
+    </div>
+    <div class="testi__grid">
+        <?php
+        $quotes = [
+            ['Digital Smile a transformé notre image de marque. Le résultat a dépassé nos attentes.', 'Direction Communication', 'Eurl Bonapro'],
+            ['Réactifs, créatifs et professionnels. Un vrai partenaire pour nos projets.',              'Service Marketing',       'Sonatrach'],
+            ['Un accompagnement du début à la fin, avec une écoute rare. Je recommande.',               'Gérant',                  'Café Central'],
+        ];
+        foreach ($quotes as $i => [$text, $author, $role]):
+            // Reveal décalé porté par l'enveloppe ; la carte garde son lift au survol.
+            $delay = number_format($i * 0.08, 2, '.', '');
+        ?>
+            <div class="testi__item reveal" style="transition-delay: <?= $delay ?>s">
+                <article class="testi__card">
+                    <span class="testi__mark" aria-hidden="true">&ldquo;</span>
+                    <p class="testi__text"><?= e($text) ?></p>
+                    <p class="testi__author"><?= e($author) ?></p>
+                    <p class="testi__role"><?= e($role) ?></p>
+                </article>
+            </div>
+        <?php endforeach; ?>
+    </div>
 </section>
 
 <!-- ============ ⑪ CONTACT — Discutons + carte de contact ============ -->

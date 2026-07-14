@@ -500,3 +500,46 @@
     .strip__track { animation: none; }
     .contact__dot { animation: none; }
 }
+
+/* =====================================================================
+   A2 — sections ajoutées : barre de confiance + témoignages.
+   ===================================================================== */
+
+/* ⑫ ILS NOUS FONT CONFIANCE — noms clients (respiration tokenisée, 2 thèmes) */
+.trustbar { text-align: center; padding: clamp(40px, 6vw, 64px) var(--pad); }
+.trustbar__label {
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 11px;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 22px;
+}
+.trustbar__list { display: flex; flex-wrap: wrap; justify-content: center; gap: 48px; list-style: none; padding: 0; margin: 0; }
+.trustbar__list li {
+    font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 18px;
+    color: var(--color-muted); opacity: .55; transition: opacity .3s ease;
+}
+.trustbar__list li:hover { opacity: 1; }
+
+/* ⑬ TÉMOIGNAGES — panneau sombre + cartes citations (lift au survol) */
+.testi {
+    margin: 16px; border-radius: 28px; background: #17142e; color: #fff;
+    padding: clamp(44px, 6vw, 84px) clamp(24px, 4vw, 56px);
+}
+.testi__head { max-width: var(--maxw); margin: 0 auto clamp(28px, 4vw, 44px); }
+.testi__label {
+    font-family: 'Poppins', var(--font-display); font-weight: 600; font-size: 13px;
+    letter-spacing: .2em; text-transform: uppercase; color: #8BC63F; margin: 0 0 14px;
+}
+.testi__title { font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: 40px; margin: 0; color: #fff; }
+.testi__grid { max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+/* .testi__item = enveloppe (cible du reveal décalé) ; .testi__card = carte (lift). */
+.testi__card {
+    height: 100%;
+    background: rgba(255, 255, 255, .035); border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 20px; padding: 28px;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.testi__card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: rgba(139, 198, 63, .35); }
+.testi__mark { display: block; font-family: 'Baloo 2', var(--font-display); font-weight: 800; font-size: 48px; line-height: .5; color: #8BC63F; margin-bottom: 12px; }
+.testi__text { font-family: 'Poppins', var(--font-display); font-size: 15px; line-height: 1.7; color: rgba(255, 255, 255, .85); margin: 0 0 20px; }
+.testi__author { font-family: 'Baloo 2', var(--font-display); font-weight: 700; font-size: 15px; color: #fff; margin: 0; }
+.testi__role { font-family: 'Poppins', var(--font-display); font-size: 12px; color: rgba(255, 255, 255, .5); margin: 2px 0 0; }
+@media (max-width: 860px) { .testi__grid { grid-template-columns: 1fr; } }
