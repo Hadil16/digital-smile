@@ -1,6 +1,38 @@
 <?php /** app/Views/partials/workspace-styles.php — styles communs des espaces (admin + employé), 100 % tokens. Inclus par admin-sidebar.php et employee-sidebar.php (donc uniquement sur les pages d'espace). */ ?>
 <style>
     /* ============================================================
+       FILET DE SÉCURITÉ DES TOKENS (clair/sombre).
+       Les pages d'espace sont servies sur des URL à 2 segments
+       (ex. /client/nouvelle-demande). Or les <link> CSS de header.php
+       sont RELATIFS (assets/css/base.css) : à cette profondeur le
+       navigateur les cherche sous .../client/assets/... → 404, donc
+       base.css (qui définit les --color-*) ne se charge pas et tout
+       apparaît « sans style ». On redéclare ici les tokens dans un
+       @layer de FAIBLE priorité : si base.css est bien chargé (URL à
+       1 segment), ses valeurs — non "layered" — l'emportent (aucun
+       changement) ; sinon, ce filet prend le relais et l'espace reste
+       stylé. Correctif local à workspace-styles.php (header.php hors scope).
+       ============================================================ */
+    @layer ds-fallback {
+        :root {
+            --color-bg: #f6f6fb; --color-surface: #ffffff; --color-surface-alt: #f3f1fb;
+            --color-text: #1e1b2e; --color-muted: #6c6a80; --color-border: rgba(0, 0, 0, .08);
+            --color-primary: #4A3F9E; --color-primary-dark: #26215C; --color-primary-light: #6b5fd4;
+            --color-accent: #8BC63F; --color-accent-dark: #6BA02C;
+            --color-success: #3B6D11; --color-warning: #b8860b; --color-danger: #b3261e; --color-info: #1e6fd9;
+            --tint-primary: rgba(74, 63, 158, .10); --tint-accent: rgba(139, 198, 63, .14);
+            --shadow-sm: 0 2px 10px rgba(20, 18, 40, .06);
+            --shadow-md: 0 12px 40px rgba(74, 63, 158, .10);
+            --shadow-lg: 0 24px 60px rgba(74, 63, 158, .16);
+            --transition: 180ms ease;
+        }
+        html[data-theme="dark"] {
+            --color-bg: #131220; --color-surface: #1d1b2c; --color-surface-alt: #262338;
+            --color-text: #ece9f7; --color-muted: #a3a0b8; --color-border: rgba(255, 255, 255, .10);
+        }
+    }
+
+    /* ============================================================
        Coquille d'espace premium — 100 % tokens (clair/sombre).
        Partagée par l'admin et l'employé.
        ============================================================ */
