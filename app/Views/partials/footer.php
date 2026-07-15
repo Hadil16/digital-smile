@@ -2,7 +2,7 @@
     <div class="foot__grid">
         <div class="foot__brand">
             <div class="foot__logo">
-                <img src="assets/img/logo.jpg" alt="">
+                <img src="<?= e(BASE_URL) ?>/assets/img/logo.jpg" alt="">
                 <span>Digital Smile</span>
             </div>
             <p class="foot__tag">Digital Like Never Before</p>
@@ -44,7 +44,7 @@
 <!-- GSAP + ScrollTrigger via CDN (décision validée par l'architecte) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="assets/js/animations.js"></script>
+<script src="<?= e(BASE_URL) ?>/assets/js/animations.js"></script>
 
 <!-- Graphiques Chart.js : chargés UNIQUEMENT si la page fournit des données
      (window.DS_CHARTS), donc jamais sur les pages publiques. Version épinglée. -->
