@@ -40,7 +40,7 @@ require ROOT_PATH . '/app/Views/partials/workspace-styles.php';
     <!-- ============ Barre latérale ============ -->
     <aside class="adm__side">
         <div class="adm__brand">
-            <img src="assets/img/logo.jpg" alt="">
+            <img src="<?= e(BASE_URL) ?>/assets/img/logo.jpg" alt="">
             <span>Digital Smile</span>
         </div>
         <nav class="adm__nav" aria-label="Navigation client">

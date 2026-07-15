@@ -27,11 +27,14 @@ $notifCount = !empty($_SESSION['user_id'])
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Styles (découpés par responsabilité, faciles à maintenir) -->
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/layout.css">
-    <link rel="stylesheet" href="assets/css/sections.css">
-    <link rel="stylesheet" href="assets/css/motion.css">
+    <!-- Styles (découpés par responsabilité, faciles à maintenir).
+         URL ABSOLUES (préfixe BASE_URL) : indispensables car ces pages sont
+         servies sur des URL à plusieurs segments (ex. /client/nouvelle-demande).
+         Un chemin relatif « assets/... » y serait résolu sous /client/... → 404. -->
+    <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/base.css">
+    <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/layout.css">
+    <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/sections.css">
+    <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/motion.css">
 
     <style>
         /* Cloche de notifications (auto-portée, couleurs de marque). */
@@ -55,7 +58,7 @@ $notifCount = !empty($_SESSION['user_id'])
 
 <!-- ============ NAVIGATION ============ -->
 <nav class="nav">
-    <a href="#accueil"><img src="assets/img/logo.jpg" alt="Digital Smile" class="nav__logo"></a>
+    <a href="#accueil"><img src="<?= e(BASE_URL) ?>/assets/img/logo.jpg" alt="Digital Smile" class="nav__logo"></a>
     <div class="nav__links">
         <a href="#services">Services</a>
         <a href="#croyances">Notre vision</a>
