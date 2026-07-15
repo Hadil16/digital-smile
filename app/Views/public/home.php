@@ -140,7 +140,7 @@ require __DIR__ . '/../partials/header.php';
                 <div class="pf" data-tilt>
                     <div class="pf__media">
                         <!-- onerror : image manquante → masquée, le dégradé de marque reste. -->
-                        <img src="assets/images/portfolio/portfolio-<?= $n ?>.jpg" alt="<?= strip_tags($title) ?>"
+                        <img src="<?= e(BASE_URL) ?>/assets/images/portfolio/portfolio-<?= $n ?>.jpg" alt="<?= strip_tags($title) ?>"
                              loading="lazy" onerror="this.style.display='none'">
                     </div>
                     <div class="pf__body">
