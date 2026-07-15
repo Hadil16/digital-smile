@@ -61,7 +61,7 @@ require ROOT_PATH . '/app/Views/partials/header.php';
     <span class="auth__blob auth__blob--l" aria-hidden="true"></span>
     <section class="auth__card">
         <div class="auth__brand">
-            <img src="assets/img/logo.jpg" alt="">
+            <img src="<?= e(BASE_URL) ?>/assets/img/logo.jpg" alt="">
             <span>Digital Smile</span>
         </div>
         <h1 class="auth__title">Connexion</h1>
