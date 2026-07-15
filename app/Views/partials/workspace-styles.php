@@ -93,9 +93,10 @@
     /* --- Boutons --- */
     .adm-btn { display: inline-block; border: 0; cursor: pointer; text-decoration: none; font-weight: 600;
         font-size: 14px; padding: 10px 20px; border-radius: 999px; font-family: inherit;
-        transition: background var(--transition), color var(--transition), border-color var(--transition), filter var(--transition); }
+        transition: background var(--transition), color var(--transition), border-color var(--transition), filter var(--transition), transform var(--transition); }
+    .adm-btn--lg { padding: 12px 26px; font-size: 15px; }   /* bouton de soumission de formulaire */
     .adm-btn--primary { background: var(--color-accent); color: #1f3d07; }
-    .adm-btn--primary:hover { background: var(--color-accent-dark); color: #fff; }
+    .adm-btn--primary:hover { background: var(--color-accent-dark); color: #fff; transform: translateY(-2px); }
     .adm-btn--assign { background: linear-gradient(135deg, #4A3F9E, #6b5fd4); color: #fff; }
     .adm-btn--assign:hover { filter: brightness(1.08); }
     .adm-btn--danger { background: rgba(179, 38, 30, .12); color: var(--color-danger); }
@@ -105,17 +106,29 @@
 
     /* --- Champs de formulaire --- */
     .adm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 20px; }
-    .adm-field { margin: 0 0 18px; }
-    .adm-label { display: block; font-weight: 600; font-size: 14px; color: var(--color-text); margin: 0 0 6px; }
-    .adm-input, .adm-select {
+    .adm-field { margin: 0 0 18px; }               /* rythme régulier de 18px entre les champs */
+    .adm-label { display: block; font-family: 'Baloo 2', 'Poppins', system-ui, sans-serif;
+        font-weight: 600; font-size: 14px; color: var(--color-text); margin: 0 0 8px; }
+    /* Base commune aux champs (bordure visible, coins doux, thème natif clair/sombre). */
+    .adm-input, .adm-select, .adm-textarea {
         border: 1px solid var(--color-border); font-size: 14px; font-family: inherit;
-        background: var(--color-surface); color: var(--color-text); }
+        background: var(--color-surface); color: var(--color-text); color-scheme: light dark;
+        transition: border-color var(--transition), box-shadow var(--transition); }
     .adm-input { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; }
-    .adm-select { padding: 9px 14px; border-radius: 999px; }
-    .adm-input:focus, .adm-select:focus { outline: 2px solid var(--color-primary-light); outline-offset: 1px; border-color: var(--color-primary-light); }
-    .adm-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; min-height: 110px; resize: vertical;
-        border: 1px solid var(--color-border); font-size: 14px; font-family: inherit; background: var(--color-surface); color: var(--color-text); }
-    .adm-textarea:focus { outline: 2px solid var(--color-primary-light); outline-offset: 1px; border-color: var(--color-primary-light); }
+    .adm-select { padding: 9px 40px 9px 14px; border-radius: 999px; }   /* pastille (sélecteurs admin) */
+    .adm-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px;
+        min-height: 120px; resize: vertical; }
+    /* Chevron personnalisé : on masque la flèche native et on dessine la nôtre. */
+    select.adm-input, .adm-select {
+        appearance: none; -webkit-appearance: none; -moz-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%238a8a99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat; background-position: right 14px center; }
+    select.adm-input { padding-right: 40px; }
+    /* Focus lime avec anneau doux (sur tous les champs). */
+    .adm-input:focus, .adm-select:focus, .adm-textarea:focus {
+        outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(139, 198, 63, .25); }
+    /* Carte enveloppant un formulaire (largeur confortable, padding généreux). */
+    .adm-formcard { max-width: 640px; padding: 28px; }
 
     /* --- Tableaux --- */
     .adm-table { width: 100%; border-collapse: collapse; font-size: 14px; }

@@ -19,7 +19,7 @@ require ROOT_PATH . '/app/Views/partials/client-sidebar.php';
             <p class="adm-error" role="alert"><?= e($error) ?></p>
         <?php endif; ?>
 
-        <div class="adm-card" style="max-width:620px">
+        <div class="adm-card adm-formcard">
             <form method="post" action="<?= e(BASE_URL) ?>/client/nouvelle-demande" novalidate>
                 <?= csrf_field() ?>
 
@@ -55,7 +55,7 @@ require ROOT_PATH . '/app/Views/partials/client-sidebar.php';
                            required value="<?= e($old['deadline']) ?>">
                 </div>
 
-                <button class="adm-btn adm-btn--primary" type="submit" style="width:100%">Envoyer la demande</button>
+                <button class="adm-btn adm-btn--primary adm-btn--lg" type="submit">Envoyer la demande</button>
             </form>
         </div>
     </main>
