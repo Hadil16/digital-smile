@@ -60,6 +60,9 @@ $auth = new AuthController(); // aucune connexion DB tant qu'aucune méthode mod
 $router->add('login',    fn() => $_SERVER['REQUEST_METHOD'] === 'POST' ? $auth->login()    : $auth->showLogin());
 $router->add('register', fn() => $_SERVER['REQUEST_METHOD'] === 'POST' ? $auth->register() : $auth->showRegister());
 $router->add('logout',   [$auth, 'logout']);
+// Changer son mot de passe (tous rôles connectés) : GET affiche, POST traite.
+// La méthode changePassword() aiguille elle-même selon REQUEST_METHOD.
+$router->add('compte/mot-de-passe', [$auth, 'changePassword']);
 
 // Tableaux de bord par rôle. Le contrôle d'accès (RBAC) est fait
 // dans chaque dashboard() via require_role().

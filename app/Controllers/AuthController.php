@@ -120,6 +120,46 @@ class AuthController
         redirect($target);
     }
 
+    /**
+     * « Changer mon mot de passe » — commun à tous les rôles connectés.
+     * GET : affiche le formulaire. POST : valide (CSRF, mot de passe actuel
+     * correct, nouveau ≥ 8 caractères, confirmation identique, différent de
+     * l'actuel) puis ré-hache en BCRYPT. Messages en français.
+     */
+    public function changePassword(): void
+    {
+        require_login(); // tous rôles connectés
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $current = (string) ($_POST['current'] ?? '');
+            $new     = (string) ($_POST['new'] ?? '');
+            $confirm = (string) ($_POST['confirm'] ?? '');
+            $uid     = (int) ($_SESSION['user_id'] ?? 0);
+
+            if (!csrf_verify()) {
+                $error = 'Session expirée, merci de réessayer.';
+            } elseif (!$this->users()->verifyPassword($uid, $current)) {
+                $error = 'Mot de passe actuel incorrect.';
+            } elseif (strlen($new) < 8) {
+                $error = 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
+            } elseif ($new !== $confirm) {
+                $error = 'La confirmation ne correspond pas au nouveau mot de passe.';
+            } elseif ($new === $current) {
+                $error = 'Le nouveau mot de passe doit être différent de l\'actuel.';
+            } else {
+                $this->users()->updatePassword($uid, password_hash($new, PASSWORD_BCRYPT));
+                $_SESSION['flash'] = 'Mot de passe mis à jour.';
+                redirect('/compte/mot-de-passe');
+            }
+        }
+
+        require ROOT_PATH . '/app/Views/account/password.php';
+    }
+
     /** Déconnexion : on vide la session, le cookie, puis retour accueil. */
     public function logout(): void
     {
