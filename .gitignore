@@ -26,3 +26,9 @@ desktop.ini
 *.log
 /.vscode/
 /.idea/
+
+# Artefacts de build du déploiement : le zip (lourd, binaire) et la zone de
+# préparation sont RECONSTRUCTIBLES via deploy/build-deploy.ps1 — jamais versionnés.
+/deploy/digital-smile-deploy.zip
+/deploy/_stage/
+/deploy/_flattest/
