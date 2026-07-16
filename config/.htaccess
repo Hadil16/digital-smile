@@ -1,0 +1,12 @@
+# Interdit tout accès WEB direct à ce dossier.
+# Sur un hébergement « à plat » (InfinityFree : racine = htdocs/), config/ se
+# retrouve SOUS la racine web : sans cette règle, config/config.local.php
+# (qui contient le mot de passe MySQL) pourrait être requêté. On le bloque.
+# Ces fichiers ne sont JAMAIS servis par le web : ils sont inclus par PHP.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

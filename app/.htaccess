@@ -1,0 +1,11 @@
+# Interdit tout accès WEB direct au code applicatif (contrôleurs, modèles,
+# vues). Sur un hébergement « à plat » (racine = htdocs/), app/ se retrouve
+# sous la racine web : cette règle empêche de servir le code source.
+# Ces fichiers sont uniquement inclus par PHP via le front controller.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
