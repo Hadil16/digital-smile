@@ -33,13 +33,18 @@ foreach ($orders as $o) {
     if ($o['status'] === 'in_progress') { $inProgress++; }
     if (in_array($o['status'], ['delivered', 'completed'], true)) { $delivered++; }
 }
-// Nombre de factures du client : méthode EXISTANTE du modèle (affichage seul).
-$invoiceCount = count((new Invoice())->allForClient((int) ($_SESSION['user_id'] ?? 0)));
+// Factures du client : nombre + total facturé (méthodes du modèle, affichage seul).
+$clientUid    = (int) ($_SESSION['user_id'] ?? 0);
+$invoiceModel = new Invoice();
+$invoiceCount = count($invoiceModel->allForClient($clientUid));
+$totalBilled  = $invoiceModel->sumTtcForClient($clientUid);
+$fmtMoney     = fn($m) => number_format((float) $m, 2, ',', ' ') . ' DZD';
 
 $kpis = [
-    ['En cours',  $inProgress,   '🚧', 'amber',  'Projets en cours'],
-    ['Livrées',   $delivered,    '🏁', 'green',  'Livrées et terminées'],
-    ['Factures',  $invoiceCount, '🧾', 'violet', 'Factures émises'],
+    ['En cours',       $inProgress,             '🚧', 'amber',  'Projets en cours',  false],
+    ['Livrées',        $delivered,              '🏁', 'green',  'Livrées et terminées', false],
+    ['Factures',       $invoiceCount,           '🧾', 'violet', 'Factures émises',   false],
+    ['Total facturé',  $fmtMoney($totalBilled), '💰', 'green',  'Montant TTC cumulé', true],
 ];
 
 // Coquille client commune (sidebar + entête).
@@ -50,13 +55,13 @@ require ROOT_PATH . '/app/Views/partials/client-sidebar.php';
 ?>
         <!-- Cartes KPI (données réelles uniquement) -->
         <section class="adm__kpis" aria-label="Indicateurs de mes commandes">
-            <?php foreach ($kpis as [$lbl, $val, $ico, $tone, $cap]): ?>
+            <?php foreach ($kpis as [$lbl, $val, $ico, $tone, $cap, $isMoney]): ?>
                 <article class="adm-kpi adm-kpi--<?= $tone ?>">
                     <div class="adm-kpi__top">
                         <span class="adm-kpi__label"><?= e($lbl) ?></span>
                         <span class="adm-kpi__ico" aria-hidden="true"><?= $ico ?></span>
                     </div>
-                    <p class="adm-kpi__num"><?= (int) $val ?></p>
+                    <p class="adm-kpi__num<?= $isMoney ? ' adm-kpi__num--sm' : '' ?>"><?= $isMoney ? e($val) : (int) $val ?></p>
                     <p class="adm-kpi__cap"><?= e($cap) ?></p>
                 </article>
             <?php endforeach; ?>

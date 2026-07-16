@@ -107,6 +107,7 @@ $router->add('employe/bibliotheque',        [new EmployeeController(), 'library'
 // facture (numéro variable) est reconnu plus bas, avant le dispatch.
 $router->add('admin/factures',         [new AdminController(), 'invoices']);
 $router->add('admin/factures/generer', [new AdminController(), 'generateInvoice']);
+$router->add('admin/factures/groupee', [new AdminController(), 'generateGroupedInvoice']); // facture groupée (POST + CSRF)
 
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
@@ -126,9 +127,10 @@ if (preg_match('#^client/commande/([A-Za-z0-9\-]+)(?:/(telecharger|confirmer))?$
 } elseif (preg_match('#^client/facture/([A-Za-z0-9\-]+)/imprimer$#', $url, $m)) {
     // Facture imprimable côté client (droits vérifiés dans le contrôleur).
     (new ClientController())->printInvoice($m[1]);
-} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)(/imprimer)?$#', $url, $m) && $m[1] !== 'generer') {
+} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)(/imprimer)?$#', $url, $m)
+          && !in_array($m[1], ['generer', 'groupee'], true)) {
     // Facture par numéro (FAC-...) : détail, ou version imprimable si /imprimer.
-    // 'generer' est exclu (géré par sa route exacte ci-dessus).
+    // 'generer' et 'groupee' sont exclus (gérés par leurs routes exactes).
     $admin = new AdminController();
     !empty($m[2]) ? $admin->printInvoice($m[1]) : $admin->showInvoice($m[1]);
 } else {

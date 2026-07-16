@@ -11,9 +11,10 @@
  */
 $fmtMoney = fn($m) => number_format((float) $m, 2, ',', ' ') . ' DZD';
 $fmtDate  = fn($d) => $d ? date('d/m/Y', strtotime($d)) : '—';
-// Taux affiché sans zéros inutiles (19.00 -> "19").
-$rate = rtrim(rtrim(number_format((float) $invoice['tax_rate'], 2, ',', ' '), '0'), ',');
+// Taux réellement appliqué (tva_rate si migré, sinon tax_rate), sans zéros inutiles.
+$rate = rtrim(rtrim(number_format((float) ($invoice['applied_rate'] ?? $invoice['tax_rate']), 2, ',', ' '), '0'), ',');
 $tva  = (float) $invoice['amount_ttc'] - (float) $invoice['amount_ht'];
+$items = $items ?? []; // lignes (une par commande) fournies par le contrôleur
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -114,23 +115,31 @@ $tva  = (float) $invoice['amount_ttc'] - (float) $invoice['amount_ht'];
                 </p>
             </div>
             <div class="right">
-                <h2>Commande</h2>
-                <p>N° <?= e($invoice['order_code']) ?></p>
+                <h2><?= count($items) > 1 ? 'Commandes' : 'Commande' ?></h2>
+                <p>
+                    <?php if (count($items) > 1): ?>
+                        <?= count($items) ?> commandes regroupées
+                    <?php else: ?>
+                        N° <?= e($invoice['order_code']) ?>
+                    <?php endif; ?>
+                </p>
             </div>
         </div>
 
         <table class="lines">
             <thead>
-                <tr><th>Service / Description</th><th class="r">Montant HT</th></tr>
+                <tr><th>N° / Service / Description</th><th class="r">Montant HT</th></tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        <strong><?= e($invoice['service_name']) ?></strong><br>
-                        <span class="sub"><?= e($invoice['project_name']) ?></span>
-                    </td>
-                    <td class="r"><?= e($fmtMoney($invoice['amount_ht'])) ?></td>
-                </tr>
+                <?php foreach ($items as $it): ?>
+                    <tr>
+                        <td>
+                            <strong><?= e($it['label']) ?></strong><br>
+                            <span class="sub">Commande <?= e($it['order_code']) ?></span>
+                        </td>
+                        <td class="r"><?= e($fmtMoney($it['amount_ht'])) ?></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
 

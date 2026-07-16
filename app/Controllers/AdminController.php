@@ -156,7 +156,7 @@ class AdminController
         require ROOT_PATH . '/app/Views/admin/invoices.php';
     }
 
-    /** Génère la facture d'une commande terminée (HT + TVA + TTC). */
+    /** Génère la facture d'UNE commande terminée (HT + TVA optionnelle + TTC). */
     public function generateInvoice(): void
     {
         require_role('admin');
@@ -165,10 +165,35 @@ class AdminController
             redirect('/admin/factures');
         }
 
-        $code = $this->invoiceM()->createFromOrder((int) ($_POST['order_id'] ?? 0));
+        // Choix TVA : "sans" -> 0 %, sinon 19 % (défaut).
+        $tvaRate = (($_POST['tva'] ?? 'avec') === 'sans') ? 0.0 : 19.0;
+
+        $code = $this->invoiceM()->createFromOrder((int) ($_POST['order_id'] ?? 0), $tvaRate);
         $_SESSION['flash'] = $code !== ''
             ? "Facture $code générée."
-            : 'Facturation impossible : commande non terminée ou déjà facturée.';
+            : 'Facturation impossible : commande non terminée, déjà facturée ou sans montant.';
+        redirect('/admin/factures');
+    }
+
+    /** Génère UNE facture groupée à partir de plusieurs commandes d'un client. */
+    public function generateGroupedInvoice(): void
+    {
+        require_role('admin');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/admin/factures');
+        }
+
+        $clientId = (int) ($_POST['client_id'] ?? 0);
+        $orderIds = (array) ($_POST['order_ids'] ?? []);       // cases cochées
+        $tvaRate  = (($_POST['tva'] ?? 'avec') === 'sans') ? 0.0 : 19.0;
+
+        // Tous les contrôles (propriété, statut, non facturée, montant) sont
+        // faits DANS le modèle : on ne fait jamais confiance aux cases cochées.
+        $res = $this->invoiceM()->createGrouped($clientId, $orderIds, $tvaRate);
+        $_SESSION['flash'] = $res['ok']
+            ? "Facture groupée {$res['code']} générée."
+            : ($res['error'] ?? 'Facturation groupée impossible.');
         redirect('/admin/factures');
     }
 
@@ -182,6 +207,7 @@ class AdminController
             require ROOT_PATH . '/app/Views/errors/404.php';
             return;
         }
+        $items = $this->invoiceM()->itemsForInvoice($number); // 1 ligne par commande
         require ROOT_PATH . '/app/Views/admin/invoice-detail.php';
     }
 
@@ -195,6 +221,7 @@ class AdminController
             require ROOT_PATH . '/app/Views/errors/404.php';
             return;
         }
+        $items = $this->invoiceM()->itemsForInvoice($number); // 1 ligne par commande
         require ROOT_PATH . '/app/Views/admin/invoice-print.php';
     }
 

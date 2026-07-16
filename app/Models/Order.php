@@ -110,22 +110,64 @@ class Order extends Model
     }
 
     /**
-     * Commandes TERMINÉES ('completed') qui n'ont pas encore de facture
-     * (candidates à la facturation). LEFT JOIN invoices + i.id IS NULL.
-     * Les plus récentes d'abord.
+     * Commandes TERMINÉES ('completed') FACTURABLES : pas encore facturées
+     * (ni comme facture simple, ni comme ligne d'une facture groupée) ET
+     * avec un montant strictement positif (une commande sans montant ne peut
+     * pas être facturée). Renvoie aussi client_id (pour la facture groupée).
+     * Dégrade proprement si la colonne `invoiced` / la table invoice_items
+     * n'existent pas encore (migration non appliquée).
      */
     public function completedWithoutInvoice(): array
     {
-        $sql = "SELECT o.id, o.code, u.full_name AS client_name, s.name AS service_name,
-                       o.project_name, o.budget, o.created_at
+        $hasInvoiced = $this->columnExists('orders', 'invoiced');
+        $hasItems    = $this->tableExists('invoice_items');
+
+        // Conditions cumulées : terminée, montant > 0, pas de facture liée.
+        $conds = ["o.status = 'completed'", "o.budget IS NOT NULL", "o.budget > 0", "i.id IS NULL"];
+        if ($hasInvoiced) {
+            $conds[] = "o.invoiced = 0";
+        }
+        $itemsJoin = '';
+        if ($hasItems) {
+            $itemsJoin = "LEFT JOIN invoice_items ii ON ii.order_id = o.id";
+            $conds[]   = "ii.id IS NULL";
+        }
+
+        $sql = "SELECT o.id, o.code, c.id AS client_id, u.full_name AS client_name,
+                       s.name AS service_name, o.project_name, o.budget, o.created_at
                 FROM orders o
                 JOIN clients  c ON c.id = o.client_id
                 JOIN users    u ON u.id = c.user_id
                 JOIN services s ON s.id = o.service_id
                 LEFT JOIN invoices i ON i.order_id = o.id
-                WHERE o.status = 'completed' AND i.id IS NULL
-                ORDER BY o.created_at DESC, o.id DESC";
+                $itemsJoin
+                WHERE " . implode(' AND ', $conds) . "
+                ORDER BY u.full_name ASC, o.created_at DESC, o.id DESC";
         return $this->db->query($sql)->fetchAll();
+    }
+
+    /** Vrai si une colonne existe (mémorisé) — dégradation propre avant migration. */
+    private function columnExists(string $table, string $column): bool
+    {
+        static $cache = [];
+        $key = "$table.$column";
+        if (!array_key_exists($key, $cache)) {
+            // Table/colonne = littéraux du code (pas d'entrée utilisateur) : sûr.
+            $stmt = $this->db->query("SHOW COLUMNS FROM `$table` LIKE " . $this->db->quote($column));
+            $cache[$key] = ($stmt->fetch() !== false);
+        }
+        return $cache[$key];
+    }
+
+    /** Vrai si une table existe (mémorisé). */
+    private function tableExists(string $table): bool
+    {
+        static $cache = [];
+        if (!array_key_exists($table, $cache)) {
+            $stmt = $this->db->query("SHOW TABLES LIKE " . $this->db->quote($table));
+            $cache[$table] = ($stmt->fetch() !== false);
+        }
+        return $cache[$table];
     }
 
     /** Vue d'ensemble : toutes les commandes avec leur statut (pour l'admin). */
