@@ -9,20 +9,34 @@
  * -----------------------------------------------------------------
  */
 
-// --- Base de données (valeurs par défaut de XAMPP) -----------------
-// Sous XAMPP, l'utilisateur MySQL est 'root' SANS mot de passe.
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'digital_smile');
-define('DB_USER', 'root');
-define('DB_PASS', '');            // vide par défaut sous XAMPP
-define('DB_CHARSET', 'utf8mb4');
+// --- Configuration LOCALE / PRODUCTION (prioritaire) ---------------
+// En production (hébergeur), on NE modifie PAS ce fichier. On crée
+// config/config.local.php (ignoré par Git) à partir du modèle
+// config/config.local.php.example, et on y met les 4 identifiants MySQL
+// de l'hébergeur + l'URL du domaine + APP_ENV='prod'. S'il existe, il
+// définit les constantes AVANT nous ; sinon on retombe sur les valeurs
+// XAMPP ci-dessous. (Une variable d'environnement du même nom est aussi
+// prise en compte, pour les hébergeurs qui en proposent.)
+if (is_file(__DIR__ . '/config.local.php')) {
+    require __DIR__ . '/config.local.php';
+}
+
+// --- Base de données (valeurs par défaut = XAMPP local) ------------
+// « defined() || define() » = on ne fixe la valeur QUE si config.local.php
+// (ou une variable d'environnement) ne l'a pas déjà définie.
+defined('DB_HOST')    || define('DB_HOST',    getenv('DB_HOST') ?: 'localhost');
+defined('DB_NAME')    || define('DB_NAME',    getenv('DB_NAME') ?: 'digital_smile');
+defined('DB_USER')    || define('DB_USER',    getenv('DB_USER') ?: 'root');
+defined('DB_PASS')    || define('DB_PASS',    getenv('DB_PASS') ?: '');   // vide sous XAMPP
+defined('DB_CHARSET') || define('DB_CHARSET', 'utf8mb4');
 
 // --- Application ---------------------------------------------------
-define('APP_NAME', 'Digital Smile');
+defined('APP_NAME') || define('APP_NAME', 'Digital Smile');
 
-// URL de base. Si vous placez le projet dans htdocs/digital-smile,
-// alors l'URL publique est http://localhost/digital-smile/public
-define('BASE_URL', '/digital-smile/public');
+// URL de base (le dossier public/ est la racine web). En local XAMPP :
+// /digital-smile/public. En production : défini dans config.local.php
+// (ex. '' si le domaine pointe directement sur public/).
+defined('BASE_URL') || define('BASE_URL', getenv('BASE_URL') ?: '/digital-smile/public');
 
 // Chemin absolu vers la racine du projet (utile pour inclure des fichiers).
 define('ROOT_PATH', dirname(__DIR__));
@@ -35,9 +49,10 @@ define('LANGUAGES', ['fr', 'ar', 'en']);
 define('DEFAULT_LANG', 'fr');
 
 // --- Environnement -------------------------------------------------
-// 'dev' = on affiche les erreurs (utile pendant le développement).
+// 'dev'  = on affiche les erreurs (utile pendant le développement).
 // 'prod' = on cache les erreurs (obligatoire en production réelle).
-define('APP_ENV', 'dev');
+// À passer sur 'prod' dans config.local.php lors du déploiement.
+defined('APP_ENV') || define('APP_ENV', getenv('APP_ENV') ?: 'dev');
 
 if (APP_ENV === 'dev') {
     error_reporting(E_ALL);
