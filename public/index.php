@@ -16,27 +16,35 @@
  * -----------------------------------------------------------------
  */
 
+// 0. Racine du code — supporte DEUX dispositions sans rien changer d'autre :
+//    • Local / XAMPP : ce fichier est dans public/, le code (app/, config/)
+//      est un niveau AU-DESSUS (../).
+//    • Hébergement mutualisé « à plat » (ex. InfinityFree, racine = htdocs/) :
+//      ce fichier est à la racine web et le code (app/, config/) est dans le
+//      MÊME dossier. On détecte le cas via la présence de ../config/config.php.
+$APP_BASE = is_file(__DIR__ . '/../config/config.php') ? dirname(__DIR__) : __DIR__;
+
 // 1. Configuration + classes de base.
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../app/Core/helpers.php';
-require_once __DIR__ . '/../app/Core/Database.php';
-require_once __DIR__ . '/../app/Core/Router.php';
-require_once __DIR__ . '/../app/Core/Model.php';                 // classe mère des modèles
-require_once __DIR__ . '/../app/Controllers/HomeController.php';
-require_once __DIR__ . '/../app/Models/User.php';                // (dépend de Model)
-require_once __DIR__ . '/../app/Models/Service.php';             // catalogue (formulaire)
-require_once __DIR__ . '/../app/Models/Order.php';               // commandes
-require_once __DIR__ . '/../app/Models/Employee.php';            // employés (affectation)
-require_once __DIR__ . '/../app/Models/Department.php';          // départements (création employé)
-require_once __DIR__ . '/../app/Models/Project.php';             // projets (espace employé)
-require_once __DIR__ . '/../app/Models/Invoice.php';             // factures
-require_once __DIR__ . '/../app/Models/Notification.php';        // notifications internes
-require_once __DIR__ . '/../app/Controllers/AuthController.php'; // (dépend de User)
-require_once __DIR__ . '/../app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
-require_once __DIR__ . '/../app/Controllers/ClientController.php';
-require_once __DIR__ . '/../app/Controllers/EmployeeController.php';
-require_once __DIR__ . '/../app/Controllers/AdminController.php';
-require_once __DIR__ . '/../app/Controllers/NotificationController.php';
+require_once $APP_BASE . '/config/config.php';
+require_once $APP_BASE . '/app/Core/helpers.php';
+require_once $APP_BASE . '/app/Core/Database.php';
+require_once $APP_BASE . '/app/Core/Router.php';
+require_once $APP_BASE . '/app/Core/Model.php';                 // classe mère des modèles
+require_once $APP_BASE . '/app/Controllers/HomeController.php';
+require_once $APP_BASE . '/app/Models/User.php';                // (dépend de Model)
+require_once $APP_BASE . '/app/Models/Service.php';             // catalogue (formulaire)
+require_once $APP_BASE . '/app/Models/Order.php';               // commandes
+require_once $APP_BASE . '/app/Models/Employee.php';            // employés (affectation)
+require_once $APP_BASE . '/app/Models/Department.php';          // départements (création employé)
+require_once $APP_BASE . '/app/Models/Project.php';             // projets (espace employé)
+require_once $APP_BASE . '/app/Models/Invoice.php';             // factures
+require_once $APP_BASE . '/app/Models/Notification.php';        // notifications internes
+require_once $APP_BASE . '/app/Controllers/AuthController.php'; // (dépend de User)
+require_once $APP_BASE . '/app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
+require_once $APP_BASE . '/app/Controllers/ClientController.php';
+require_once $APP_BASE . '/app/Controllers/EmployeeController.php';
+require_once $APP_BASE . '/app/Controllers/AdminController.php';
+require_once $APP_BASE . '/app/Controllers/NotificationController.php';
 
 // 1 bis. Session durcie : cookie HttpOnly + SameSite (+ Secure en HTTPS).
 //        On la démarre AVANT toute écriture de session ou jeton CSRF.
