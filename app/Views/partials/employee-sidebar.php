@@ -51,6 +51,9 @@ require ROOT_PATH . '/app/Views/partials/workspace-styles.php';
                 </a>
             <?php endforeach; ?>
         </nav>
+        <a class="adm__link<?= ($employeeActive === 'securite') ? ' is-active' : '' ?>" href="<?= e(BASE_URL) ?>/compte/mot-de-passe"<?= ($employeeActive === 'securite') ? ' aria-current="page"' : '' ?>>
+            <span class="adm__link-ico" aria-hidden="true">🔒</span>Sécurité
+        </a>
         <a class="adm__link adm__link--logout" href="<?= e(BASE_URL) ?>/logout">
             <span class="adm__link-ico" aria-hidden="true">🚪</span>Déconnexion
         </a>

@@ -71,6 +71,35 @@ class User extends Model
     }
 
     /**
+     * Vérifie que $plain correspond au mot de passe ACTUEL de l'utilisateur.
+     * Lit le hash BCRYPT en base (compte non supprimé) puis password_verify().
+     * false si l'utilisateur n'existe pas / est supprimé, ou si ça ne concorde pas.
+     */
+    public function verifyPassword(int $userId, string $plain): bool
+    {
+        $stmt = $this->db->prepare(
+            "SELECT password_hash FROM users WHERE id = :id AND deleted_at IS NULL LIMIT 1"
+        );
+        $stmt->execute([':id' => $userId]);
+        $hash = $stmt->fetchColumn();
+        return $hash !== false && password_verify($plain, (string) $hash);
+    }
+
+    /**
+     * Remplace le mot de passe d'un utilisateur par un nouveau hash (déjà
+     * produit avec password_hash BCRYPT côté contrôleur). Renvoie true si une
+     * ligne a bien été mise à jour.
+     */
+    public function updatePassword(int $userId, string $newHash): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE users SET password_hash = :hash WHERE id = :id AND deleted_at IS NULL"
+        );
+        $stmt->execute([':hash' => $newHash, ':id' => $userId]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
      * Crée un compte EMPLOYÉ et renvoie l'id du user créé.
      * Deux écritures dans UNE transaction : la ligne `users` (rôle employee,
      * mot de passe BCRYPT) puis la fiche `employees` liée + son département.
