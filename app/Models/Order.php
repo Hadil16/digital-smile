@@ -210,6 +210,24 @@ class Order extends Model
     }
 
     /**
+     * Activité commandes sur une période [$from,$to] (dates 'YYYY-MM-DD') :
+     * nombre de commandes CRÉÉES sur la période, et parmi elles combien sont
+     * désormais 'completed'. Basé sur created_at (date réelle) — il n'existe
+     * pas de date de complétion fiable en base, on ne l'invente pas.
+     */
+    public function countsByStatus(string $from, string $to): array
+    {
+        $sql = "SELECT COUNT(*) AS created,
+                       SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed
+                FROM orders
+                WHERE DATE(created_at) BETWEEN :from AND :to";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':from' => $from, ':to' => $to]);
+        $r = $stmt->fetch() ?: [];
+        return ['created' => (int) ($r['created'] ?? 0), 'completed' => (int) ($r['completed'] ?? 0)];
+    }
+
+    /**
      * Nombre de commandes par mois sur les N derniers mois (pour un graphique
      * en courbe). Renvoie ['labels' => [...], 'values' => [...]] alignés, avec
      * 0 pour un mois sans commande. Les mois vides restent visibles.

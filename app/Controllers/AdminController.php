@@ -42,10 +42,63 @@ class AdminController
         $totalInvoices  = $this->invoiceM()->countTotal();
 
         // Séries pour les graphiques (converties en JSON dans la vue).
-        $monthly     = $this->orderM()->monthlyCounts(6); // courbe : commandes/mois
         $topServices = $this->orderM()->topServices(5);   // barres : services les plus demandés
 
+        // Chiffre d'affaires par période, granularité choisie (jour/mois/année,
+        // défaut mois), sur l'année en cours. Alimente la courbe + le sélecteur.
+        $granularity = in_array($_GET['g'] ?? '', ['jour', 'mois', 'annee'], true) ? $_GET['g'] : 'mois';
+        $year    = date('Y');
+        $revenue = $this->invoiceM()->revenueByPeriod($granularity, "$year-01-01", "$year-12-31");
+
         require ROOT_PATH . '/app/Views/admin/dashboard.php';
+    }
+
+    /** Bilan financier (comptable) : CA HT/TVA/TTC, graphiques, tableau. */
+    public function bilan(): void
+    {
+        require_role('admin');
+        [$g, $from, $to] = $this->bilanParams();
+        $summary   = $this->invoiceM()->financialSummary($from, $to);
+        $paid      = $this->invoiceM()->paidVsUnpaid($from, $to);
+        $byPeriod  = $this->invoiceM()->revenueByPeriod($g, $from, $to);
+        $byService = $this->invoiceM()->revenueByService($from, $to);
+        $orders    = $this->orderM()->countsByStatus($from, $to);
+        require ROOT_PATH . '/app/Views/admin/bilan.php';
+    }
+
+    /** Version imprimable du bilan (page autonome, sans sidebar/boutons). */
+    public function bilanPrint(): void
+    {
+        require_role('admin');
+        [$g, $from, $to] = $this->bilanParams();
+        $summary  = $this->invoiceM()->financialSummary($from, $to);
+        $paid     = $this->invoiceM()->paidVsUnpaid($from, $to);
+        $byPeriod = $this->invoiceM()->revenueByPeriod($g, $from, $to);
+        $orders   = $this->orderM()->countsByStatus($from, $to);
+        require ROOT_PATH . '/app/Views/admin/bilan-print.php';
+    }
+
+    /** Lit/valide la période du bilan depuis l'URL (granularité + dates). */
+    private function bilanParams(): array
+    {
+        $g = in_array($_GET['g'] ?? '', ['jour', 'mois', 'annee'], true) ? $_GET['g'] : 'mois';
+        $year = date('Y');
+        $from = $this->validDate($_GET['from'] ?? '') ?? "$year-01-01";
+        $to   = $this->validDate($_GET['to'] ?? '')   ?? "$year-12-31";
+        if ($from > $to) { [$from, $to] = [$to, $from]; }  // on remet dans l'ordre
+        return [$g, $from, $to];
+    }
+
+    /** Renvoie une date 'YYYY-MM-DD' valide, ou null si invalide. */
+    private function validDate(string $d): ?string
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+            [$y, $m, $day] = array_map('intval', explode('-', $d));
+            if (checkdate($m, $day, $y)) {
+                return $d;
+            }
+        }
+        return null;
     }
 
     /** Liste des clients + statistiques (page d'administration). */

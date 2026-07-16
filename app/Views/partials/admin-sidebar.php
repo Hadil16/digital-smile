@@ -28,6 +28,7 @@ $admNav = [
     'clients'   => ['Clients',         BASE_URL . '/admin/clients',    '👥'],
     'employes'  => ['Employés',        BASE_URL . '/admin/employes',   '🧑‍💼'],
     'factures'  => ['Factures',        BASE_URL . '/admin/factures',   '🧾'],
+    'bilan'     => ['Bilan',           BASE_URL . '/admin/bilan',      '📈'],
 ];
 $adminActive  = $adminActive  ?? 'dashboard';
 $pageTitle    = $pageTitle    ?? 'Administration';

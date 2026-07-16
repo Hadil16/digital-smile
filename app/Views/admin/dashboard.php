@@ -24,19 +24,32 @@ $kpis = [
     ['label' => 'Factures',   'value' => (int) ($totalInvoices ?? 0),          'icon' => '🧾',  'tone' => 'violet', 'cap' => 'Émises'],
 ];
 
-// Données graphiques (inchangées) — lues par le script Chart.js du footer.
+// Granularité du graphique de chiffre d'affaires (jour/mois/année, défaut mois).
+$g = in_array($_GET['g'] ?? '', ['jour', 'mois', 'annee'], true) ? $_GET['g'] : 'mois';
+
+// Courbe « Chiffre d'affaires (TTC) » — à partir de $revenue (revenueByPeriod).
+$revenue   = $revenue ?? [];
+$revLabels = array_map(fn($r) => $r['period'], $revenue);
+$revValues = array_map(fn($r) => (float) $r['ttc'], $revenue);
+
+// Répartition des commandes par statut (donut).
 $statusFrLabels = ['En attente', 'Acceptée', 'En cours', 'Livrée', 'Terminée', 'Refusée'];
 $statusValues   = [
     (int) ($statusCounts['pending'] ?? 0),   (int) ($statusCounts['approved'] ?? 0),
     (int) ($statusCounts['in_progress'] ?? 0), (int) ($statusCounts['delivered'] ?? 0),
     (int) ($statusCounts['completed'] ?? 0), (int) ($statusCounts['rejected'] ?? 0),
 ];
-$monthly     = $monthly     ?? ['labels' => [], 'values' => []];
 $topServices = $topServices ?? ['labels' => [], 'values' => []];
-$chartData = ['monthly' => $monthly, 'status' => ['labels' => $statusFrLabels, 'values' => $statusValues], 'services' => $topServices];
+
+// Données pour le script de graphiques auto-porté (rendu en bas de page).
+$chartData = [
+    'revenue'  => ['labels' => $revLabels, 'values' => $revValues],
+    'status'   => ['labels' => $statusFrLabels, 'values' => $statusValues],
+    'services' => $topServices,
+];
 $pair = fn(array $l, array $v) => $l ? implode(', ', array_map(fn($a, $b) => "$a : $b", $l, $v)) : 'aucune donnée';
-$sumMonthly = $pair($monthly['labels'], $monthly['values']);
-$sumStatus  = $pair($statusFrLabels, $statusValues);
+$sumRevenue  = $pair($revLabels, $revValues);
+$sumStatus   = $pair($statusFrLabels, $statusValues);
 $sumServices = $pair($topServices['labels'], $topServices['values']);
 
 // 5 dernières commandes — via une méthode EXISTANTE du modèle (affichage seul,
@@ -68,12 +81,20 @@ require ROOT_PATH . '/app/Views/partials/admin-sidebar.php';
             <?php endforeach; ?>
         </section>
 
-        <!-- Graphiques (canvas + données Chart.js inchangés) -->
+        <!-- Graphiques (rendus par le script auto-porté en bas de page) -->
         <section class="adm__charts" aria-label="Graphiques de l'activité">
             <div class="adm-card">
-                <h2 class="adm-card__title">Commandes par mois</h2>
+                <div class="adm__recent-head">
+                    <h2 class="adm-card__title" style="margin:0">Chiffre d'affaires (TTC)</h2>
+                    <div class="adm-gran" role="group" aria-label="Granularité">
+                        <?php foreach (['jour' => 'Jour', 'mois' => 'Mois', 'annee' => 'Année'] as $key => $lbl): ?>
+                            <a class="adm-gran__btn<?= $g === $key ? ' is-active' : '' ?>"
+                               href="<?= e(BASE_URL) ?>/admin?g=<?= $key ?>"><?= $lbl ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 <div class="adm-card__canvas">
-                    <canvas id="chartMonthly" role="img" aria-label="Commandes par mois — <?= e($sumMonthly) ?>"><?= e($sumMonthly) ?></canvas>
+                    <canvas id="chartRevenue" role="img" aria-label="Chiffre d'affaires TTC — <?= e($sumRevenue) ?>"><?= e($sumRevenue) ?></canvas>
                 </div>
             </div>
             <div class="adm-card">
@@ -90,13 +111,46 @@ require ROOT_PATH . '/app/Views/partials/admin-sidebar.php';
             </div>
         </section>
 
-        <!-- Données PHP -> JS (identiques : le script Chart.js du footer les lit) -->
+        <!-- Données PHP -> JS + rendu Chart.js AUTO-PORTÉ (libellés honnêtes). -->
         <script>
-            window.DS_CHARTS = <?= json_encode(
+            window.DS_DASH = <?= json_encode(
                 $chartData,
                 JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
             ) ?>;
+            (function () {
+                var d = window.DS_DASH; if (!d) return;
+                var s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+                s.onload = render; document.body.appendChild(s);
+                function render() {
+                    if (typeof Chart === 'undefined') return;
+                    var violet = '#4A3F9E', lime = '#8BC63F';
+                    var palette = ['#f0a500', '#4A3F9E', '#1e6fd9', '#0d9488', '#8BC63F', '#b3261e'];
+                    var r = document.getElementById('chartRevenue');
+                    if (r && d.revenue) new Chart(r, { type: 'line',
+                        data: { labels: d.revenue.labels, datasets: [{ label: 'CA TTC (DZD)', data: d.revenue.values,
+                            borderColor: violet, backgroundColor: 'rgba(74,63,158,.12)', fill: true, tension: .3, pointBackgroundColor: violet, pointRadius: 4 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+                    var st = document.getElementById('chartStatus');
+                    if (st && d.status) new Chart(st, { type: 'doughnut',
+                        data: { labels: d.status.labels, datasets: [{ data: d.status.values, backgroundColor: palette, borderColor: '#fff', borderWidth: 2 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 14 } } } } });
+                    var sv = document.getElementById('chartServices');
+                    if (sv && d.services) new Chart(sv, { type: 'bar',
+                        data: { labels: d.services.labels, datasets: [{ label: 'Demandes', data: d.services.values, backgroundColor: lime, borderRadius: 6 }] },
+                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } } });
+                }
+            })();
         </script>
+
+        <style>
+            /* Sélecteur de granularité (auto-porté, tokens). */
+            .adm-gran { display: inline-flex; gap: 4px; }
+            .adm-gran__btn { font-size: 12px; font-weight: 600; color: var(--color-muted);
+                border: 1px solid var(--color-border); border-radius: 999px; padding: 5px 12px; text-decoration: none; transition: all var(--transition); }
+            .adm-gran__btn:hover { border-color: var(--color-primary-light); color: var(--color-text); }
+            .adm-gran__btn.is-active { background: linear-gradient(135deg, #4A3F9E, #6b5fd4); border-color: transparent; color: #fff; }
+        </style>
 
         <!-- Dernières commandes -->
         <section class="adm-card" aria-label="Dernières commandes">

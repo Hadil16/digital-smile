@@ -120,6 +120,10 @@ $router->add('admin/factures',         [new AdminController(), 'invoices']);
 $router->add('admin/factures/generer', [new AdminController(), 'generateInvoice']);
 $router->add('admin/factures/groupee', [new AdminController(), 'generateGroupedInvoice']); // facture groupée (POST + CSRF)
 
+// Bilan financier (comptable) : page (GET) + version imprimable (GET).
+$router->add('admin/bilan',          [new AdminController(), 'bilan']);
+$router->add('admin/bilan/imprimer', [new AdminController(), 'bilanPrint']);
+
 // 3. Dispatch : le paramètre ?url= est posé par public/.htaccess
 //    (chaîne vide si on arrive directement sur la racine).
 $url = trim((string) ($_GET['url'] ?? ''), '/');

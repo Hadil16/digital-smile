@@ -278,6 +278,116 @@ class Invoice extends Model
         return $code !== false ? (string) $code : null;
     }
 
+    /* =================================================================
+       BILAN FINANCIER (comptable) — LECTURE SEULE, données RÉELLES.
+       Il n'existe PAS de facture « annulée » dans le schéma (le statut
+       facture est unpaid|partial|paid) : toutes les factures émises sont
+       de vraies factures. Les sommes portent donc sur les factures émises
+       sur la période. Montants en DZD.
+       ================================================================= */
+
+    /**
+     * Synthèse sur une période [$from,$to] (dates 'YYYY-MM-DD' incluses) :
+     * total HT, total TVA (TTC-HT), total TTC, nombre de factures et panier
+     * moyen (TTC / nombre). Renvoie 0 partout si aucune facture.
+     */
+    public function financialSummary(string $from, string $to): array
+    {
+        $sql = "SELECT COUNT(*) AS n,
+                       COALESCE(SUM(amount_ht), 0)              AS ht,
+                       COALESCE(SUM(amount_ttc - amount_ht), 0) AS tva,
+                       COALESCE(SUM(amount_ttc), 0)             AS ttc
+                FROM invoices
+                WHERE DATE(issued_at) BETWEEN :from AND :to";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':from' => $from, ':to' => $to]);
+        $r   = $stmt->fetch() ?: [];
+        $n   = (int) ($r['n'] ?? 0);
+        $ttc = (float) ($r['ttc'] ?? 0);
+        return [
+            'count' => $n,
+            'ht'    => (float) ($r['ht'] ?? 0),
+            'tva'   => (float) ($r['tva'] ?? 0),
+            'ttc'   => $ttc,
+            'avg'   => $n > 0 ? round($ttc / $n, 2) : 0.0,
+        ];
+    }
+
+    /**
+     * Payées vs impayées sur la période (montant TTC + nombre). « payée » =
+     * statut 'paid' ; « impayée » = tout le reste (unpaid/partial). Si la
+     * colonne `status` n'existe pas, renvoie available=false (l'appelant
+     * affiche « indisponible » au lieu d'inventer un chiffre).
+     */
+    public function paidVsUnpaid(string $from, string $to): array
+    {
+        if (!$this->hasColumn('invoices', 'status')) {
+            return ['available' => false, 'paid_ttc' => 0.0, 'paid_n' => 0, 'unpaid_ttc' => 0.0, 'unpaid_n' => 0];
+        }
+        $sql = "SELECT
+                  COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_ttc ELSE 0 END), 0) AS paid_ttc,
+                  SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)                        AS paid_n,
+                  COALESCE(SUM(CASE WHEN status <> 'paid' THEN amount_ttc ELSE 0 END), 0) AS unpaid_ttc,
+                  SUM(CASE WHEN status <> 'paid' THEN 1 ELSE 0 END)                        AS unpaid_n
+                FROM invoices
+                WHERE DATE(issued_at) BETWEEN :from AND :to";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':from' => $from, ':to' => $to]);
+        $r = $stmt->fetch() ?: [];
+        return [
+            'available'  => true,
+            'paid_ttc'   => (float) ($r['paid_ttc'] ?? 0),
+            'paid_n'     => (int) ($r['paid_n'] ?? 0),
+            'unpaid_ttc' => (float) ($r['unpaid_ttc'] ?? 0),
+            'unpaid_n'   => (int) ($r['unpaid_n'] ?? 0),
+        ];
+    }
+
+    /**
+     * CA groupé par période (jour/mois/année) : une ligne par période avec
+     * HT, TVA, TTC, nombre de factures et impayé (TTC). Sert le graphique
+     * d'évolution ET le tableau récapitulatif. Ordonné chronologiquement.
+     */
+    public function revenueByPeriod(string $granularity, string $from, string $to): array
+    {
+        $fmt = ['jour' => '%Y-%m-%d', 'mois' => '%Y-%m', 'annee' => '%Y'][$granularity] ?? '%Y-%m';
+        $unpaidSel = $this->hasColumn('invoices', 'status')
+            ? "COALESCE(SUM(CASE WHEN status <> 'paid' THEN amount_ttc ELSE 0 END), 0)"
+            : "0";
+        $sql = "SELECT DATE_FORMAT(issued_at, :fmt) AS period,
+                       COALESCE(SUM(amount_ht), 0)              AS ht,
+                       COALESCE(SUM(amount_ttc - amount_ht), 0) AS tva,
+                       COALESCE(SUM(amount_ttc), 0)             AS ttc,
+                       COUNT(*)                                 AS n,
+                       $unpaidSel                               AS unpaid_ttc
+                FROM invoices
+                WHERE DATE(issued_at) BETWEEN :from AND :to
+                GROUP BY period
+                ORDER BY period ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':fmt' => $fmt, ':from' => $from, ':to' => $to]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * CA (TTC) groupé par SERVICE sur la période. Jointure factures → commande
+     * (représentative) → service. Les commandes annulées sont exclues.
+     */
+    public function revenueByService(string $from, string $to): array
+    {
+        $sql = "SELECT s.name AS service, COALESCE(SUM(i.amount_ttc), 0) AS ttc
+                FROM invoices i
+                JOIN orders   o ON o.id = i.order_id
+                JOIN services s ON s.id = o.service_id
+                WHERE DATE(i.issued_at) BETWEEN :from AND :to
+                  AND o.status <> 'cancelled'
+                GROUP BY s.id, s.name
+                ORDER BY ttc DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':from' => $from, ':to' => $to]);
+        return $stmt->fetchAll();
+    }
+
     /**
      * Insère la ligne `invoices` (avec tva_rate si la colonne existe) et
      * renvoie l'id créé. `tax_rate` reste synchronisé pour l'ancien code.
