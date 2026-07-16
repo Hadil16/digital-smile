@@ -1,0 +1,34 @@
+<?php
+/**
+ * config/config.local.php.example — MODÈLE de configuration de PRODUCTION.
+ * -----------------------------------------------------------------
+ * MODE D'EMPLOI (hébergement type InfinityFree / cPanel) :
+ *   1. COPIEZ ce fichier en  config/config.local.php  (même dossier,
+ *      SANS le « .example »).
+ *   2. Remplacez les 4 valeurs MySQL ci-dessous par celles de l'hébergeur
+ *      (panneau « MySQL Databases » de l'hébergeur).
+ *   3. Réglez BASE_URL selon l'emplacement du site (voir plus bas).
+ *   4. Laissez APP_ENV sur 'prod' (les erreurs techniques restent masquées).
+ *
+ * IMPORTANT :
+ *   - config/config.local.php est IGNORÉ par Git (.gitignore) : vos vrais
+ *     identifiants ne partent JAMAIS dans le dépôt.
+ *   - Ne modifiez PAS config/config.php : il lit automatiquement ce fichier.
+ * -----------------------------------------------------------------
+ */
+
+// ================= LES 4 VALEURS MySQL À CHANGER ===================
+define('DB_HOST', 'sqlXXX.epizy.com');            // hôte MySQL de l'hébergeur
+define('DB_NAME', 'epiz_00000000_digitalsmile');  // nom de la base créée
+define('DB_USER', 'epiz_00000000');               // utilisateur MySQL
+define('DB_PASS', 'VOTRE_MOT_DE_PASSE_MYSQL');    // mot de passe MySQL
+
+// ========================= URL DE BASE =============================
+// Le dossier public/ est la racine web. Choisissez selon votre cas :
+//   • Le domaine pointe DIRECTEMENT sur public/ (recommandé) :  ''
+//   • Le site est dans un sous-dossier .../digitalsmile/public : '/digitalsmile/public'
+define('BASE_URL', '');
+
+// ===================== ENVIRONNEMENT (prod) ========================
+// 'prod' masque les messages d'erreur techniques aux visiteurs.
+define('APP_ENV', 'prod');
