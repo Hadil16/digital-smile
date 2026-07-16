@@ -16,7 +16,10 @@ $statusMeta = [
 $fmtMoney = fn($m) => number_format((float) $m, 2, ',', ' ') . ' DZD';
 $fmtDate  = fn($d) => $d ? date('d/m/Y', strtotime($d)) : '—';
 $tva = (float) $invoice['amount_ttc'] - (float) $invoice['amount_ht']; // montant de TVA
+// Taux réellement appliqué (tva_rate si migré, sinon tax_rate), sans zéros inutiles.
+$rate = rtrim(rtrim(number_format((float) ($invoice['applied_rate'] ?? $invoice['tax_rate']), 2, ',', ' '), '0'), ',');
 [$stLabel, $stTone] = $statusMeta[$invoice['status']] ?? [$invoice['status'], 'muted'];
+$items = $items ?? []; // lignes (une par commande) fournies par le contrôleur
 
 // Coquille admin commune (sidebar + entête).
 $adminActive  = 'factures';
@@ -56,22 +59,44 @@ require ROOT_PATH . '/app/Views/partials/admin-sidebar.php';
                     </p>
                 </div>
                 <div>
-                    <h3>Commande</h3>
-                    <p>
-                        N° <?= e($invoice['order_code']) ?><br>
-                        <?= e($invoice['project_name']) ?><br>
-                        Service : <?= e($invoice['service_name']) ?>
-                    </p>
+                    <h3><?= count($items) > 1 ? 'Commandes' : 'Commande' ?></h3>
+                    <p><?= count($items) ?> ligne<?= count($items) > 1 ? 's' : '' ?> — détail ci-dessous</p>
                 </div>
+            </div>
+
+            <!-- Lignes : une par commande (facture simple = 1 ligne). -->
+            <div class="adm-table__scroll">
+                <table class="adm-table adm-doc__lines">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Service / Projet</th>
+                            <th class="adm-table__right">Montant HT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($items as $it): ?>
+                            <tr>
+                                <td class="adm-table__num"><?= e($it['order_code']) ?></td>
+                                <td><?= e($it['label']) ?></td>
+                                <td class="adm-table__right"><?= e($fmtMoney($it['amount_ht'])) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
 
             <div class="adm-amounts">
                 <div><span>Montant HT</span><span><?= e($fmtMoney($invoice['amount_ht'])) ?></span></div>
-                <div><span>TVA (<?= e(rtrim(rtrim(number_format((float) $invoice['tax_rate'], 2, ',', ' '), '0'), ',')) ?> %)</span><span><?= e($fmtMoney($tva)) ?></span></div>
+                <div><span>TVA (<?= e($rate) ?> %)</span><span><?= e($fmtMoney($tva)) ?></span></div>
                 <div class="adm-amounts__ttc"><span>Total TTC</span><span><?= e($fmtMoney($invoice['amount_ttc'])) ?></span></div>
             </div>
         </article>
     </main>
 </div>
+
+<style>
+    .adm-doc__lines { margin: 6px 0 18px; }
+</style>
 
 <?php require ROOT_PATH . '/app/Views/partials/footer.php'; ?>

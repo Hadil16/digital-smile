@@ -56,11 +56,23 @@ require ROOT_PATH . '/app/Views/partials/client-sidebar.php';
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
+                        <tfoot>
+                            <tr class="cli-total">
+                                <td colspan="2" class="adm-table__right">Total facturé</td>
+                                <td class="adm-table__right"><?= e($fmtMoney(array_sum(array_map(fn($i) => (float) $i['amount_ttc'], $invoices)))) ?></td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
         <?php endif; ?>
     </main>
 </div>
+
+<style>
+    .cli-total td { border-top: 2px solid var(--color-border); font-weight: 700;
+        color: var(--color-text); padding-top: 14px; }
+</style>
 
 <?php require ROOT_PATH . '/app/Views/partials/footer.php'; ?>

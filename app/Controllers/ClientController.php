@@ -194,7 +194,8 @@ class ClientController
             return;
         }
 
-        // Vue d'impression partagée avec l'admin (variable $invoice).
+        // Vue d'impression partagée avec l'admin (variables $invoice + $items).
+        $items = $this->invoices()->itemsForInvoice($number); // 1 ligne par commande
         require ROOT_PATH . '/app/Views/admin/invoice-print.php';
     }
 
