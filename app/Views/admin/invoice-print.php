@@ -15,6 +15,12 @@ $fmtDate  = fn($d) => $d ? date('d/m/Y', strtotime($d)) : '—';
 $rate = rtrim(rtrim(number_format((float) ($invoice['applied_rate'] ?? $invoice['tax_rate']), 2, ',', ' '), '0'), ',');
 $tva  = (float) $invoice['amount_ttc'] - (float) $invoice['amount_ht'];
 $items = $items ?? []; // lignes (une par commande) fournies par le contrôleur
+
+// État de paiement (auto-calculé depuis les paiements enregistrés).
+$payments  = isset($invoice['id']) ? (new Payment())->forInvoice((int) $invoice['id']) : [];
+$paidAmt   = array_sum(array_map(fn($p) => (float) $p['amount'], $payments));
+$remaining = round((float) $invoice['amount_ttc'] - $paidAmt, 2);
+$lastPayAt = $payments[0]['paid_at'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -67,6 +73,12 @@ $items = $items ?? []; // lignes (une par commande) fournies par le contrôleur
     .totals div { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #eee; }
     .totals .ttc { border-bottom: 0; border-top: 2px solid var(--violet); margin-top: 4px; padding-top: 12px;
         font-weight: 800; font-size: 17px; color: var(--violet); }
+
+    .paystate { clear: both; margin: 18px 0 0 auto; width: 300px; font-size: 14px; padding: 10px 12px;
+        border-radius: 8px; text-align: center; }
+    .paystate--paid    { background: #eef7e0; color: #3B6D11; }
+    .paystate--partial { background: #fff7e6; color: #b8860b; }
+    .paystate--unpaid  { background: #f4f4f6; color: #555; }
 
     .foot { margin-top: 44px; padding-top: 16px; border-top: 1px solid #eee; text-align: center;
         color: var(--grey); font-size: 13px; }
@@ -148,6 +160,16 @@ $items = $items ?? []; // lignes (une par commande) fournies par le contrôleur
             <div><span>TVA (<?= e($rate) ?> %)</span><span><?= e($fmtMoney($tva)) ?></span></div>
             <div class="ttc"><span>Total TTC</span><span><?= e($fmtMoney($invoice['amount_ttc'])) ?></span></div>
         </div>
+
+        <p class="paystate paystate--<?= e($invoice['status']) ?>">
+            <?php if ($invoice['status'] === 'paid'): ?>
+                Facture <strong>payée</strong><?= $lastPayAt ? ' le ' . e($fmtDate($lastPayAt)) : '' ?>.
+            <?php elseif ($invoice['status'] === 'partial'): ?>
+                <strong>Partiellement payée</strong> — payé <?= e($fmtMoney($paidAmt)) ?>, reste <?= e($fmtMoney($remaining)) ?>.
+            <?php else: ?>
+                <strong>Impayée</strong> — montant dû <?= e($fmtMoney($invoice['amount_ttc'])) ?>.
+            <?php endif; ?>
+        </p>
 
         <p class="foot">Merci pour votre confiance.</p>
     </div>

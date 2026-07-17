@@ -174,7 +174,7 @@ class Invoice extends Model
             ? 'COALESCE(i.tva_rate, i.tax_rate)'
             : 'i.tax_rate';
 
-        $sql = "SELECT i.code, i.amount_ht, i.tax_rate, $rateSel AS applied_rate,
+        $sql = "SELECT i.id, i.code, i.amount_ht, i.tax_rate, $rateSel AS applied_rate,
                        i.amount_ttc, i.status, i.issued_at,
                        o.code AS order_code, o.project_name,
                        u.full_name AS client_name, u.email AS client_email,
@@ -248,6 +248,26 @@ class Invoice extends Model
         return (int) $this->db->query("SELECT COUNT(*) FROM invoices")->fetchColumn();
     }
 
+    /** Total encaissé pour une facture (somme des paiements). */
+    public function amountPaid(int $invoiceId): float
+    {
+        $stmt = $this->db->prepare("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE invoice_id = :id");
+        $stmt->execute([':id' => $invoiceId]);
+        return round((float) $stmt->fetchColumn(), 2);
+    }
+
+    /** Reste à encaisser pour une facture (TTC − total encaissé). */
+    public function amountRemaining(int $invoiceId): float
+    {
+        $stmt = $this->db->prepare(
+            "SELECT COALESCE(i.amount_ttc, 0) - COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id = i.id), 0)
+             FROM invoices i WHERE i.id = :id LIMIT 1"
+        );
+        $stmt->execute([':id' => $invoiceId]);
+        $v = $stmt->fetchColumn();
+        return $v === false ? 0.0 : round((float) $v, 2);
+    }
+
     /**
      * Factures d'UN client (numéro, commande, TTC, statut, date), les plus
      * récentes d'abord. Propriété garantie DANS la requête via clients.user_id :
@@ -293,52 +313,61 @@ class Invoice extends Model
      */
     public function financialSummary(string $from, string $to): array
     {
+        // encaisse = somme RÉELLE des paiements sur les factures de la période.
         $sql = "SELECT COUNT(*) AS n,
-                       COALESCE(SUM(amount_ht), 0)              AS ht,
-                       COALESCE(SUM(amount_ttc - amount_ht), 0) AS tva,
-                       COALESCE(SUM(amount_ttc), 0)             AS ttc
-                FROM invoices
-                WHERE DATE(issued_at) BETWEEN :from AND :to";
+                       COALESCE(SUM(i.amount_ht), 0)               AS ht,
+                       COALESCE(SUM(i.amount_ttc - i.amount_ht), 0) AS tva,
+                       COALESCE(SUM(i.amount_ttc), 0)              AS ttc,
+                       COALESCE(SUM(pp.paid), 0)                   AS encaisse
+                FROM invoices i
+                LEFT JOIN (SELECT invoice_id, SUM(amount) AS paid FROM payments GROUP BY invoice_id) pp
+                       ON pp.invoice_id = i.id
+                WHERE DATE(i.issued_at) BETWEEN :from AND :to";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':from' => $from, ':to' => $to]);
-        $r   = $stmt->fetch() ?: [];
-        $n   = (int) ($r['n'] ?? 0);
-        $ttc = (float) ($r['ttc'] ?? 0);
+        $r        = $stmt->fetch() ?: [];
+        $n        = (int) ($r['n'] ?? 0);
+        $ttc      = (float) ($r['ttc'] ?? 0);
+        $encaisse = (float) ($r['encaisse'] ?? 0);
         return [
-            'count' => $n,
-            'ht'    => (float) ($r['ht'] ?? 0),
-            'tva'   => (float) ($r['tva'] ?? 0),
-            'ttc'   => $ttc,
-            'avg'   => $n > 0 ? round($ttc / $n, 2) : 0.0,
+            'count'    => $n,
+            'ht'       => (float) ($r['ht'] ?? 0),
+            'tva'      => (float) ($r['tva'] ?? 0),
+            'ttc'      => $ttc,
+            'avg'      => $n > 0 ? round($ttc / $n, 2) : 0.0,
+            'encaisse' => $encaisse,                 // CA encaissé (paiements reçus)
+            'reste'    => round($ttc - $encaisse, 2), // reste à encaisser
         ];
     }
 
     /**
-     * Payées vs impayées sur la période (montant TTC + nombre). « payée » =
-     * statut 'paid' ; « impayée » = tout le reste (unpaid/partial). Si la
-     * colonne `status` n'existe pas, renvoie available=false (l'appelant
-     * affiche « indisponible » au lieu d'inventer un chiffre).
+     * Encaissé vs reste à encaisser sur la période (montants RÉELS, basés sur
+     * les paiements) : paid_ttc = somme des paiements ; unpaid_ttc = TTC −
+     * encaissé. Plus les nombres de factures par statut réel (paid/partial/
+     * unpaid). available reste vrai (la table payments existe toujours).
      */
     public function paidVsUnpaid(string $from, string $to): array
     {
-        if (!$this->hasColumn('invoices', 'status')) {
-            return ['available' => false, 'paid_ttc' => 0.0, 'paid_n' => 0, 'unpaid_ttc' => 0.0, 'unpaid_n' => 0];
-        }
-        $sql = "SELECT
-                  COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_ttc ELSE 0 END), 0) AS paid_ttc,
-                  SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)                        AS paid_n,
-                  COALESCE(SUM(CASE WHEN status <> 'paid' THEN amount_ttc ELSE 0 END), 0) AS unpaid_ttc,
-                  SUM(CASE WHEN status <> 'paid' THEN 1 ELSE 0 END)                        AS unpaid_n
-                FROM invoices
-                WHERE DATE(issued_at) BETWEEN :from AND :to";
+        $sql = "SELECT COALESCE(SUM(i.amount_ttc), 0) AS ttc,
+                       COALESCE(SUM(pp.paid), 0)      AS encaisse,
+                       SUM(CASE WHEN i.status = 'paid'    THEN 1 ELSE 0 END) AS paid_n,
+                       SUM(CASE WHEN i.status = 'partial' THEN 1 ELSE 0 END) AS partial_n,
+                       SUM(CASE WHEN i.status = 'unpaid'  THEN 1 ELSE 0 END) AS unpaid_n
+                FROM invoices i
+                LEFT JOIN (SELECT invoice_id, SUM(amount) AS paid FROM payments GROUP BY invoice_id) pp
+                       ON pp.invoice_id = i.id
+                WHERE DATE(i.issued_at) BETWEEN :from AND :to";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':from' => $from, ':to' => $to]);
-        $r = $stmt->fetch() ?: [];
+        $r        = $stmt->fetch() ?: [];
+        $ttc      = (float) ($r['ttc'] ?? 0);
+        $encaisse = (float) ($r['encaisse'] ?? 0);
         return [
             'available'  => true,
-            'paid_ttc'   => (float) ($r['paid_ttc'] ?? 0),
+            'paid_ttc'   => $encaisse,                  // encaissé (réel)
+            'unpaid_ttc' => round($ttc - $encaisse, 2), // reste à encaisser
             'paid_n'     => (int) ($r['paid_n'] ?? 0),
-            'unpaid_ttc' => (float) ($r['unpaid_ttc'] ?? 0),
+            'partial_n'  => (int) ($r['partial_n'] ?? 0),
             'unpaid_n'   => (int) ($r['unpaid_n'] ?? 0),
         ];
     }
@@ -351,17 +380,17 @@ class Invoice extends Model
     public function revenueByPeriod(string $granularity, string $from, string $to): array
     {
         $fmt = ['jour' => '%Y-%m-%d', 'mois' => '%Y-%m', 'annee' => '%Y'][$granularity] ?? '%Y-%m';
-        $unpaidSel = $this->hasColumn('invoices', 'status')
-            ? "COALESCE(SUM(CASE WHEN status <> 'paid' THEN amount_ttc ELSE 0 END), 0)"
-            : "0";
-        $sql = "SELECT DATE_FORMAT(issued_at, :fmt) AS period,
-                       COALESCE(SUM(amount_ht), 0)              AS ht,
-                       COALESCE(SUM(amount_ttc - amount_ht), 0) AS tva,
-                       COALESCE(SUM(amount_ttc), 0)             AS ttc,
-                       COUNT(*)                                 AS n,
-                       $unpaidSel                               AS unpaid_ttc
-                FROM invoices
-                WHERE DATE(issued_at) BETWEEN :from AND :to
+        // impayé RÉEL par période = TTC − encaissé (paiements), pas le statut.
+        $sql = "SELECT DATE_FORMAT(i.issued_at, :fmt) AS period,
+                       COALESCE(SUM(i.amount_ht), 0)               AS ht,
+                       COALESCE(SUM(i.amount_ttc - i.amount_ht), 0) AS tva,
+                       COALESCE(SUM(i.amount_ttc), 0)              AS ttc,
+                       COUNT(*)                                    AS n,
+                       COALESCE(SUM(i.amount_ttc), 0) - COALESCE(SUM(pp.paid), 0) AS unpaid_ttc
+                FROM invoices i
+                LEFT JOIN (SELECT invoice_id, SUM(amount) AS paid FROM payments GROUP BY invoice_id) pp
+                       ON pp.invoice_id = i.id
+                WHERE DATE(i.issued_at) BETWEEN :from AND :to
                 GROUP BY period
                 ORDER BY period ASC";
         $stmt = $this->db->prepare($sql);

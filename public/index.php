@@ -38,6 +38,7 @@ require_once $APP_BASE . '/app/Models/Employee.php';            // employés (af
 require_once $APP_BASE . '/app/Models/Department.php';          // départements (création employé)
 require_once $APP_BASE . '/app/Models/Project.php';             // projets (espace employé)
 require_once $APP_BASE . '/app/Models/Invoice.php';             // factures
+require_once $APP_BASE . '/app/Models/Payment.php';             // paiements (dépend de Model)
 require_once $APP_BASE . '/app/Models/Notification.php';        // notifications internes
 require_once $APP_BASE . '/app/Controllers/AuthController.php'; // (dépend de User)
 require_once $APP_BASE . '/app/Middleware/Auth.php';            // gardes RBAC (require_login / require_role)
@@ -142,12 +143,17 @@ if (preg_match('#^client/commande/([A-Za-z0-9\-]+)(?:/(telecharger|confirmer))?$
 } elseif (preg_match('#^client/facture/([A-Za-z0-9\-]+)/imprimer$#', $url, $m)) {
     // Facture imprimable côté client (droits vérifiés dans le contrôleur).
     (new ClientController())->printInvoice($m[1]);
-} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)(/imprimer)?$#', $url, $m)
+} elseif (preg_match('#^admin/factures/([A-Za-z0-9\-]+)(?:/(imprimer|paiement/supprimer|paiement))?$#', $url, $m)
           && !in_array($m[1], ['generer', 'groupee'], true)) {
-    // Facture par numéro (FAC-...) : détail, ou version imprimable si /imprimer.
-    // 'generer' et 'groupee' sont exclus (gérés par leurs routes exactes).
+    // Facture par numéro (FAC-...) : détail (GET), impression, ou paiements
+    // (POST + CSRF). 'generer' et 'groupee' sont gérés par leurs routes exactes.
     $admin = new AdminController();
-    !empty($m[2]) ? $admin->printInvoice($m[1]) : $admin->showInvoice($m[1]);
+    switch ($m[2] ?? '') {
+        case 'imprimer':           $admin->printInvoice($m[1]);  break;
+        case 'paiement':           $admin->recordPayment($m[1]); break;
+        case 'paiement/supprimer': $admin->deletePayment($m[1]); break;
+        default:                   $admin->showInvoice($m[1]);
+    }
 } else {
     $router->dispatch($url);
 }

@@ -48,22 +48,25 @@ $chartData = [
     ],
     'paid' => [
         'available' => (bool) $paid['available'],
-        'labels'    => ['Payées', 'Impayées'],
+        'labels'    => ['Encaissé', 'Reste'],
         'values'    => [(float) $paid['paid_ttc'], (float) $paid['unpaid_ttc']],
     ],
 ];
 
+// Reste à encaisser en % du CA TTC (facturé).
+$restePct = $ttc > 0 ? round((float) $summary['reste'] / $ttc * 100, 1) : null;
+
 // KPI (réels). Les montants sont des chaînes déjà formatées (rendu --sm).
+// « CA facturé » = TTC émis ; « CA encaissé » = paiements reçus ; « reste » = TTC − encaissé.
 $kpis = [
-    ['CA HT',        $fmtMoney($summary['ht']),  '💰', 'violet', 'Hors taxe'],
-    ['TVA collectée', $fmtMoney($summary['tva']), '🧾', 'amber',  'TVA facturée'],
-    ['CA TTC',       $fmtMoney($summary['ttc']), '💵', 'green',  'Toutes taxes comprises'],
-    ['Factures',     (string) (int) $summary['count'], '📄', 'violet', 'Sur la période'],
-    ['Panier moyen', $fmtMoney($summary['avg']), '🛒', 'green',  'TTC par facture'],
-    ['Impayé',
-        $paid['available'] ? $fmtMoney($paid['unpaid_ttc']) : '—',
-        '⏳', 'red',
-        $paid['available'] ? ($unpaidPct !== null ? $unpaidPct . ' % du CA TTC' : 'Aucune facture') : 'Statut indisponible'],
+    ['CA HT',            $fmtMoney($summary['ht']),  '💰', 'violet', 'Hors taxe'],
+    ['TVA collectée',    $fmtMoney($summary['tva']), '🧾', 'amber',  'TVA facturée'],
+    ['CA facturé (TTC)', $fmtMoney($summary['ttc']), '💵', 'green',  'Toutes taxes comprises'],
+    ['CA encaissé',      $fmtMoney($summary['encaisse']), '✅', 'green', 'Paiements reçus (TTC)'],
+    ['Reste à encaisser', $fmtMoney($summary['reste']), '⏳', 'red',
+        $restePct !== null ? $restePct . ' % du CA facturé' : 'Aucune facture'],
+    ['Factures',         (string) (int) $summary['count'], '📄', 'violet', 'Sur la période'],
+    ['Panier moyen',     $fmtMoney($summary['avg']), '🛒', 'green',  'TTC par facture'],
 ];
 
 // Liens de période (conservent la plage de dates courante).
@@ -123,17 +126,10 @@ require ROOT_PATH . '/app/Views/partials/admin-sidebar.php';
                 <h2 class="adm-card__title">Répartition du CA par service</h2>
                 <div class="bl-canvas"><canvas id="blService"></canvas></div>
             </div>
-            <?php if ($paid['available']): ?>
-                <div class="adm-card">
-                    <h2 class="adm-card__title">Factures payées vs impayées</h2>
-                    <div class="bl-canvas"><canvas id="blPaid"></canvas></div>
-                </div>
-            <?php else: ?>
-                <div class="adm-card">
-                    <h2 class="adm-card__title">Factures payées vs impayées</h2>
-                    <p class="adm__empty">Donnée indisponible : le statut de paiement n'est pas suivi.</p>
-                </div>
-            <?php endif; ?>
+            <div class="adm-card">
+                <h2 class="adm-card__title">Encaissé vs reste à encaisser</h2>
+                <div class="bl-canvas"><canvas id="blPaid"></canvas></div>
+            </div>
         </section>
 
         <!-- Tableau récapitulatif -->

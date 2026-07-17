@@ -21,6 +21,7 @@ class AdminController
     private ?Department $departmentModel = null;
     private ?Client     $clientModel     = null;
     private ?Invoice    $invoiceModel    = null;
+    private ?Payment    $paymentModel    = null;
 
     private function orderM(): Order          { return $this->orderModel      ??= new Order(); }
     private function employeeM(): Employee    { return $this->employeeModel   ??= new Employee(); }
@@ -28,6 +29,7 @@ class AdminController
     private function deptM(): Department       { return $this->departmentModel ??= new Department(); }
     private function clientM(): Client         { return $this->clientModel     ??= new Client(); }
     private function invoiceM(): Invoice       { return $this->invoiceModel    ??= new Invoice(); }
+    private function paymentM(): Payment       { return $this->paymentModel    ??= new Payment(); }
 
     /** Tableau de bord : cartes de statistiques + accès à la gestion. */
     public function dashboard(): void
@@ -250,7 +252,7 @@ class AdminController
         redirect('/admin/factures');
     }
 
-    /** Détail d'une facture (numéro dans l'URL). */
+    /** Détail d'une facture (numéro dans l'URL) + paiements. */
     public function showInvoice(string $number): void
     {
         require_role('admin');
@@ -260,8 +262,59 @@ class AdminController
             require ROOT_PATH . '/app/Views/errors/404.php';
             return;
         }
-        $items = $this->invoiceM()->itemsForInvoice($number); // 1 ligne par commande
+        $invoiceId = (int) $invoice['id'];
+        $items     = $this->invoiceM()->itemsForInvoice($number); // 1 ligne par commande
+        $payments  = $this->paymentM()->forInvoice($invoiceId);
+        $paid      = $this->invoiceM()->amountPaid($invoiceId);
+        $remaining = $this->invoiceM()->amountRemaining($invoiceId);
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
         require ROOT_PATH . '/app/Views/admin/invoice-detail.php';
+    }
+
+    /** Enregistre un paiement pour une facture (statut recalculé dans le modèle). */
+    public function recordPayment(string $number): void
+    {
+        require_role('admin');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/admin/factures/' . rawurlencode($number));
+        }
+        $invoice = $this->invoiceM()->findByNumber($number);
+        if ($invoice === null) {
+            http_response_code(404);
+            require ROOT_PATH . '/app/Views/errors/404.php';
+            return;
+        }
+        // Montant : accepte la virgule décimale.
+        $amount = (float) str_replace(',', '.', trim((string) ($_POST['amount'] ?? '0')));
+        $date   = trim((string) ($_POST['date'] ?? '')) ?: date('Y-m-d');
+        $method = (string) ($_POST['method'] ?? 'transfer');
+
+        $res = $this->paymentM()->record((int) $invoice['id'], $amount, $date, $method);
+        $_SESSION['flash'] = $res['ok'] ? 'Paiement enregistré.' : ($res['error'] ?? 'Paiement impossible.');
+        redirect('/admin/factures/' . rawurlencode($number));
+    }
+
+    /** Supprime un paiement erroné (statut recalculé). */
+    public function deletePayment(string $number): void
+    {
+        require_role('admin');
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = 'Session expirée, merci de réessayer.';
+            redirect('/admin/factures/' . rawurlencode($number));
+        }
+        $invoice = $this->invoiceM()->findByNumber($number);
+        if ($invoice === null) {
+            http_response_code(404);
+            require ROOT_PATH . '/app/Views/errors/404.php';
+            return;
+        }
+        $ok = $this->paymentM()->delete((int) ($_POST['payment_id'] ?? 0), (int) $invoice['id']);
+        $_SESSION['flash'] = $ok ? 'Paiement supprimé.' : 'Paiement introuvable.';
+        redirect('/admin/factures/' . rawurlencode($number));
     }
 
     /** Version imprimable / PDF d'une facture (impression navigateur). */

@@ -11,7 +11,7 @@
 require ROOT_PATH . '/app/Views/partials/header.php';
 
 $statusMeta = [
-    'unpaid'  => ['Non payée', 'red'],
+    'unpaid'  => ['Impayée',   'muted'],
     'partial' => ['Partielle', 'amber'],
     'paid'    => ['Payée',     'green'],
 ];
@@ -137,9 +137,16 @@ $tvaChoice = function (string $idPrefix) {
         <?php if (empty($invoices)): ?>
             <p class="adm-empty">Aucune facture émise pour le moment.</p>
         <?php else: ?>
+            <!-- Filtre par statut de paiement (JS, sans rechargement). -->
+            <div class="adm-filter" role="group" aria-label="Filtrer par statut de paiement">
+                <button type="button" class="adm-filter__btn is-active" data-filter="all">Toutes</button>
+                <button type="button" class="adm-filter__btn" data-filter="paid">Payées</button>
+                <button type="button" class="adm-filter__btn" data-filter="partial">Partielles</button>
+                <button type="button" class="adm-filter__btn" data-filter="unpaid">Impayées</button>
+            </div>
             <div class="adm-card">
                 <div class="adm-table__scroll">
-                    <table class="adm-table">
+                    <table class="adm-table" id="invoicesTable">
                         <thead>
                             <tr>
                                 <th>Numéro</th>
@@ -154,7 +161,7 @@ $tvaChoice = function (string $idPrefix) {
                         <tbody>
                             <?php foreach ($invoices as $inv): ?>
                                 <?php [$lbl, $tone] = $statusMeta[$inv['status']] ?? [$inv['status'], 'muted']; ?>
-                                <tr>
+                                <tr data-status="<?= e($inv['status']) ?>">
                                     <td class="adm-table__num"><?= e($inv['code']) ?></td>
                                     <td><?= e($inv['client_name']) ?></td>
                                     <td><?= e($inv['order_code']) ?></td>
@@ -200,6 +207,33 @@ $tvaChoice = function (string $idPrefix) {
         .inv-pick { grid-template-columns: auto 1fr; }
         .inv-pick__ht { grid-column: 2; }
     }
+
+    /* Barre de filtre par statut (auto-portée, tokens). */
+    .adm-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+    .adm-filter__btn { cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface);
+        color: var(--color-muted); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 16px;
+        border-radius: 999px; transition: background var(--transition), color var(--transition), border-color var(--transition); }
+    .adm-filter__btn:hover { border-color: var(--color-primary-light); color: var(--color-text); }
+    .adm-filter__btn.is-active { background: linear-gradient(135deg, #4A3F9E, #6b5fd4); border-color: transparent; color: #fff; }
 </style>
+
+<script>
+    // Filtre des factures par statut de paiement, sans rechargement.
+    (function () {
+        var bar = document.querySelector('.adm-filter');
+        var table = document.getElementById('invoicesTable');
+        if (!bar || !table) return;
+        bar.addEventListener('click', function (ev) {
+            var btn = ev.target.closest('.adm-filter__btn');
+            if (!btn) return;
+            bar.querySelectorAll('.adm-filter__btn').forEach(function (b) { b.classList.remove('is-active'); });
+            btn.classList.add('is-active');
+            var want = btn.getAttribute('data-filter');
+            table.querySelectorAll('tbody tr').forEach(function (row) {
+                row.hidden = !(want === 'all' || row.getAttribute('data-status') === want);
+            });
+        });
+    })();
+</script>
 
 <?php require ROOT_PATH . '/app/Views/partials/footer.php'; ?>
