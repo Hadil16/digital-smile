@@ -26,3 +26,10 @@ desktop.ini
 *.log
 /.vscode/
 /.idea/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
