@@ -23,6 +23,8 @@ It combines the agency's public website with a private workspace where **clients
 | Follows orders and downloads deliverables | Uploads deliverables | Creates employee accounts, manages clients |
 | Sees invoices and total billing | Profile with photo and a work library | Dashboard with statistics cards and interactive charts |
 | | | Generates invoices (optional 19 % VAT, grouped invoices) with printable PDF |
+| | | Records payments (partial / full) that update invoice status |
+| | | Financial report (bilan) with period charts and a print version |
 
 **For everyone:** in-app notifications · change password · secure login and registration
 
@@ -57,6 +59,7 @@ docs/              ← architecture, database, API, deployment, design system, r
 - **Role-based access control** with middleware for admin / employee / client routes
 - **Config outside the public folder**, **non-executable upload folder**
 - **Soft deletes** for traceability
+- **Deployment-ready for shared hosting** — `app/` and `config/` are blocked from web access, and a build script packages a flat deploy archive without secrets
 
 ## 🚀 Run it locally
 
